@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useEffect, useState } from "react";
 import { useTable, useSortBy, useBlockLayout, useResizeColumns } from "react-table";
 import styles from "../styles/ComponentsTable.module.css";
 import commonStyles from "../styles/CommonStyles.module.css";
@@ -10,6 +10,19 @@ export default function ComponentsTable({
   onSortChange,
   componentsActual,
 }) {
+  const [tableWidth, setTableWidth] = useState("100%");
+
+  useEffect(() => {
+    const handleResize = () => {
+      setTableWidth(`${window.innerWidth - 40}px`); // 40px for padding
+    };
+
+    handleResize(); // Initial call
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const columns = useMemo(
     () => [
       {
@@ -25,8 +38,15 @@ export default function ComponentsTable({
           value && (
             <div>
               <p className={styles.versionInfo}>
-                Name: <span className={styles.versionName}>{value.name}</span> Version:{" "}
-                <span className={styles.versionNumber}>{value.version}</span>
+                Name: <span className={styles.versionName}>{value.name}</span>
+                {" Version: "}
+                <span
+                  className={`${styles.versionNumber} ${
+                    value.version ? styles.highlightedVersion : ""
+                  }`}
+                >
+                  {value.version || "N/A"}
+                </span>
               </p>
             </div>
           ),
@@ -148,48 +168,52 @@ export default function ComponentsTable({
   );
 
   return (
-    <div className={commonStyles.container}>
+    <div className={`${commonStyles.container} w-full`}>
       <div className={commonStyles.header}>
         <h3 className={commonStyles.title}>Components</h3>
       </div>
-      <div className={commonStyles.content}>
-        <table {...getTableProps()} className={styles.table}>
-          <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <th
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    className={styles.th}
-                    onClick={() => handleSort(column.id)}
-                  >
-                    {column.render("Header")}
-                    <div
-                      {...column.getResizerProps()}
-                      className={`${styles.resizer} ${column.isResizing ? styles.isResizing : ""}`}
-                    />
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {rows.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()} key={row.id}>
-                  {row.cells.map((cell) => {
-                    return (
-                      <td {...cell.getCellProps()} className={styles.td} key={cell.column.id}>
-                        {cell.render("Cell")}
-                      </td>
-                    );
-                  })}
+      <div className={`${commonStyles.content} overflow-x-auto`}>
+        <div style={{ width: tableWidth }}>
+          <table {...getTableProps()} className={styles.table}>
+            <thead>
+              {headerGroups.map((headerGroup) => (
+                <tr {...headerGroup.getHeaderGroupProps()}>
+                  {headerGroup.headers.map((column) => (
+                    <th
+                      {...column.getHeaderProps(column.getSortByToggleProps())}
+                      className={styles.th}
+                      onClick={() => handleSort(column.id)}
+                    >
+                      {column.render("Header")}
+                      <div
+                        {...column.getResizerProps()}
+                        className={`${styles.resizer} ${
+                          column.isResizing ? styles.isResizing : ""
+                        }`}
+                      />
+                    </th>
+                  ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+              {rows.map((row) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()} key={row.id}>
+                    {row.cells.map((cell) => {
+                      return (
+                        <td {...cell.getCellProps()} className={styles.td} key={cell.column.id}>
+                          {cell.render("Cell")}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

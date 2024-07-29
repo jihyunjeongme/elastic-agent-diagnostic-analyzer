@@ -2,12 +2,12 @@ import styles from "../styles/CommonStyles.module.css";
 
 export default function AgentState({ fleetMessage, fleetState, logLevel, message, state }) {
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} w-full`}>
       <div className={styles.header}>
         <h3 className={styles.title}>Agent State</h3>
       </div>
       <div className={styles.content}>
-        <dl className={`${styles.grid} grid-cols-1 sm:grid-cols-2`}>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
             <dt className={styles.label}>Fleet Message</dt>
             <dd className={styles.value}>{fleetMessage}</dd>

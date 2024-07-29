@@ -1,0 +1,57 @@
+.container {
+  padding: 2rem;
+  background-color: #f5f7fa;
+  min-height: calc(100vh - 60px); /* 헤더 높이를 고려 */
+}
+
+.title {
+  font-size: 28px;
+  color: #1a1c21;
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.uploadContainer {
+  background-color: #fff;
+  border-radius: 6px;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.uploadTitle {
+  font-size: 1.5rem;
+  color: #1a1c21;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.fileInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.uploadButton {
+  background-color: #0077cc;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.uploadButton:hover {
+  background-color: #005fa3;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileName {
+  font-size: 0.875rem;
+  color: #69707d;
+}

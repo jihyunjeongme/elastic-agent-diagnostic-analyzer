@@ -1,7 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+body {
+  @apply bg-gray-100;
+  font-family: "Inter", sans-serif;
+  color: #1a1c21;
+  background-color: #f5f7fa;
+}
+
+.container {
+  @apply w-full max-w-full px-4;
+}
+
+/* 기존 d3-flame-graph 스타일 유지 */
 .d3-flame-graph rect {
   stroke: #eeeeee;
   fill-opacity: 0.8;

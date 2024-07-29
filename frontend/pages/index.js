@@ -5,6 +5,7 @@ import ConfigSection from "../components/ConfigSection";
 import VersionInfo from "../components/VersionInfo";
 import ComponentsTable from "../components/ComponentsTable";
 import AgentState from "../components/AgentState";
+import styles from "../styles/Home.module.css";
 import { truncateText, getStatusColor, getRandomColor } from "../utils/helpers";
 import JSZip from "jszip";
 import { useDiagnostic } from "../contexts/DiagnosticContext";
@@ -164,7 +165,7 @@ export default function Home() {
   }, []);
 
   const renderOverviewTab = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       {diagnosticInfo && (
         <>
           <VersionInfo
@@ -237,16 +238,30 @@ export default function Home() {
       `}</style>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       {!isFileUploaded && (
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-2">Upload Elastic Agent Diagnostic Bundle</h2>
-          <input type="file" onChange={onFileUpload} accept=".zip" className="border p-2 rounded" />
+        <div className={styles.uploadContainer}>
+          <h2 className={styles.uploadTitle}>Upload Elastic Agent Diagnostic Bundle</h2>
+          <div className={styles.fileInputWrapper}>
+            <label htmlFor="file-upload" className={styles.uploadButton}>
+              Choose File
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              onChange={onFileUpload}
+              accept=".zip"
+              className={styles.fileInput}
+            />
+            <span className={styles.fileName}>
+              {diagnosticInfo ? diagnosticInfo.fileName : "No file chosen"}
+            </span>
+          </div>
         </div>
       )}
       {isFileUploaded && (
-        <>
+        <div className="max-w-full">
           {activeTab === "overview" && renderOverviewTab()}
           {activeTab === "configuration" && renderConfigurationTab()}
-        </>
+        </div>
       )}
     </Layout>
   );

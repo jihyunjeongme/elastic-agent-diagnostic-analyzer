@@ -30,13 +30,15 @@ export default function Layout({ children }) {
     <div className="min-h-screen bg-gray-100">
       <Header version="0.1.0" />
       <nav className="bg-white shadow">
-        <div className="container mx-auto px-4 py-4 max-w-7xl">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-start space-x-2">
+            {" "}
+            {/* 여기를 수정 */}
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
-                className={`py-2 sm:py-3 text-xs sm:text-sm font-medium rounded-lg transition-colors duration-200 w-full ${
+                className={`px-6 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
                   activeTab === tab.id
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -51,7 +53,7 @@ export default function Layout({ children }) {
           </div>
         </div>
       </nav>
-      <main className="container mx-auto px-4 py-8 max-w-7xl">{children}</main>
+      <main className="container mx-auto px-4 py-8 max-w-full">{children}</main>
     </div>
   );
 }

@@ -107,3 +107,9 @@
 .searchButton:hover {
   background-color: #2d3748;
 }
+
+.highlightedVersion {
+  background-color: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
