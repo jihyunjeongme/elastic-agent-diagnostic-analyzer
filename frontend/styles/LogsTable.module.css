@@ -1,0 +1,69 @@
+.tableContainer {
+  overflow-x: auto;
+  max-width: 100%;
+  background-color: #f0f4f8;
+}
+
+.table {
+  display: inline-block;
+  border-spacing: 0;
+  border: 1px solid #cbd5e0;
+  width: 100%;
+}
+
+.tr {
+  display: flex;
+}
+
+.th,
+.td {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 12px;
+  text-align: left;
+  background-color: #f0f4f8;
+  border-right: 1px solid #cbd5e0;
+  border-bottom: 1px solid #cbd5e0;
+}
+
+.th {
+  font-weight: 600;
+  color: #2d3748;
+  position: relative;
+  user-select: none;
+  background-color: #e2e8f0;
+}
+
+.messageCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  background: rgba(0, 0, 0, 0.1);
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.resizer.isResizing {
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .resizer {
+    opacity: 0;
+  }
+
+  *:hover > .resizer {
+    opacity: 1;
+  }
+}

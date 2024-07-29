@@ -1,0 +1,24 @@
+/* styles/Header.module.css */
+.header {
+  background-color: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 2rem;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #343741;
+  margin-left: 1rem;
+}
+
+.version {
+  font-size: 0.875rem;
+  color: #69707d;
+  margin-left: 0.5rem;
+}

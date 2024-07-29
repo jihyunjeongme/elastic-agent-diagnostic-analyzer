@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.d3-flame-graph rect {
+  stroke: #eeeeee;
+  fill-opacity: 0.8;
+}
+
+.d3-flame-graph text {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  fill: white;
+  pointer-events: none;
+}
+
+/* .d3-flame-graph rect {
+  stroke: #eeeeee;
+  fill-opacity: 0.8;
+}
+
+.d3-flame-graph text {
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 12px;
+  pointer-events: none; */
+/* } */

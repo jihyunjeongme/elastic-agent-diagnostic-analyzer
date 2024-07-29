@@ -1,0 +1,205 @@
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.heatmapContainer {
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.yLabelsAndHeatmap {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.yLabel {
+  font-size: 12px;
+  width: 400px;
+  padding: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid #eee;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.errorMessage {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heatmapRow {
+  display: flex;
+  align-items: center;
+}
+
+.cell {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #333;
+  font-weight: bold;
+}
+
+.xLabels {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 12px;
+  margin-left: 400px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.xLabel {
+  width: 30px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  padding: 5px 0;
+  margin-right: 2px;
+  text-align: left;
+}
+
+.buttonContainer {
+  margin-top: 20px;
+  margin-left: 400px;
+}
+
+.button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.moreButton {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  margin-left: 5px;
+  white-space: nowrap;
+}
+
+.popup {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  z-index: 1000;
+  max-width: 600px;
+  word-wrap: break-word;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.popupTitle {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.popupLabel {
+  font-weight: bold;
+  color: #555;
+  display: inline-block;
+  width: 120px;
+  margin-right: 10px;
+}
+
+.popupValue {
+  color: #333;
+}
+
+.popupField {
+  margin-bottom: 10px;
+}
+
+.popupContent {
+  position: relative;
+}
+
+.popupContent h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.popupContent p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.popupContent strong {
+  font-weight: bold;
+  color: #555;
+}
+
+.closeButton {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.closeButton:hover {
+  background-color: #d32f2f;
+}
+
+.moreButton:hover {
+  text-decoration: underline;
+}
+
+.smallerText {
+  font-size: 0.9em;
+}

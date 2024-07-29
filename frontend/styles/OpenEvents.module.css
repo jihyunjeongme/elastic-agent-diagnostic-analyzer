@@ -1,0 +1,110 @@
+.openEvents {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.eventSection {
+  margin-bottom: 16px;
+}
+
+.errorTitle {
+  color: #e53e3e;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.warnTitle {
+  color: #dd6b20;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.event {
+  display: flex;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.errorIndicator,
+.warnIndicator {
+  width: 4px;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+.errorIndicator {
+  background-color: #e53e3e;
+}
+
+.warnIndicator {
+  background-color: #dd6b20;
+}
+
+.eventContent {
+  flex: 1;
+}
+
+.eventMessage {
+  display: block;
+  font-size: 14px;
+  color: #4a5568;
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.eventCount {
+  font-size: 12px;
+  color: #718096;
+  margin-left: 4px;
+}
+
+.eventTime {
+  font-size: 12px;
+  color: #718096;
+}
+
+.moreLink {
+  color: #4299e1;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.pageButton {
+  background-color: #edf2f7;
+  color: #4a5568;
+  border: none;
+  padding: 4px 8px;
+  margin: 0 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.pageButton:hover {
+  background-color: #e2e8f0;
+}
+
+.activePage {
+  background-color: #4299e1;
+  color: #fff;
+}

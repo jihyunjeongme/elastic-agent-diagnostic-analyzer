@@ -1,0 +1,319 @@
+/* styles/ConfigSection.module.css */
+.container {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.toggleButton {
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  background-color: #f7fafc;
+  transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.toggleButton:hover {
+  background-color: #edf2f7;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.description {
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.content {
+  background-color: white;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 1rem;
+  background-color: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.searchInput {
+  flex-grow: 1;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  font-size: 14px;
+}
+
+.codeContainer {
+  padding: 1rem;
+  max-height: 500px;
+  overflow: auto;
+  background-color: #ffffff;
+  color: #24292e;
+}
+
+.codeLine {
+  display: flex;
+  align-items: center;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 0 5px;
+}
+
+.codeLine:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.lineNumber {
+  user-select: none;
+  text-align: right;
+  padding-right: 1em;
+  min-width: 3em;
+  color: #6a737d;
+}
+
+.codeIndent {
+  display: inline-block;
+}
+
+.codeToggle {
+  cursor: pointer;
+  user-select: none;
+  margin-right: 5px;
+  color: #0366d6;
+}
+
+.codeContent {
+  white-space: pre;
+}
+
+.key {
+  color: #22863a;
+}
+
+.value {
+  color: #032f62;
+}
+
+.highlighted {
+  background-color: #fff5b1;
+}
+
+.darkMode {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+}
+
+.darkMode .codeLine:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.darkMode .lineNumber {
+  color: #858585;
+}
+
+.darkMode .codeToggle {
+  color: #569cd6;
+}
+
+.darkMode .key {
+  color: #9cdcfe;
+}
+
+.darkMode .value {
+  color: #ce9178;
+}
+
+.darkMode .highlighted {
+  background-color: #264f78;
+}
+
+.darkModeToggle {
+  padding: 0.5rem 1rem;
+  background-color: #4a5568;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.darkModeToggle:hover {
+  background-color: #2d3748;
+}
+
+/* 기존 스타일 유지 */
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dataTable th,
+.dataTable td {
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.dataTable th {
+  background-color: #f7fafc;
+  font-weight: 600;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.th,
+.td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+}
+
+.th:last-child,
+.td:last-child {
+  border-right: none;
+}
+
+.th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: #4b5563;
+}
+
+.td {
+  font-size: 1rem;
+  color: #111827;
+}
+
+.resizer {
+  display: inline-block;
+  width: 10px;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translateX(50%);
+  z-index: 1;
+  touch-action: none;
+  cursor: col-resize;
+}
+
+.resizer:hover {
+  background: #cbd5e0;
+}
+
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.healthyBadge {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.unhealthyBadge {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.versionInfo {
+  font-size: 1rem;
+}
+
+.versionName,
+.versionNumber {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  background-color: #e5e7eb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+}
+
+.metaInfo {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.unitLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.unitValue {
+  font-size: 1rem;
+  color: #111827;
+}
+
+.searchButton {
+  padding: 0.5rem 1rem;
+  background-color: #4a5568;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.searchButton:hover {
+  background-color: #2d3748;
+}
+
+.searchInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  background-color: #edf2f7;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  min-width: 70px;
+}
+
+.searchInfoSeparator {
+  margin: 0 0.25rem;
+  color: #718096;
+}
+
+.nextButton {
+  padding: 0.5rem 1rem;
+  background-color: #4a5568;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.nextButton:hover {
+  background-color: #2d3748;
+}
+
+.noResults {
+  font-size: 14px;
+  color: #e53e3e;
+  margin-left: 10px;
+}
