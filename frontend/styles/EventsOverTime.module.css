@@ -1,8 +1,9 @@
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 20px;
+  overflow-x: auto;
 }
 
 .title {
@@ -16,27 +17,36 @@
 .heatmapContainer {
   display: flex;
   flex-direction: column;
+  align-items: center;
   overflow-x: auto;
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 20px;
   background-color: #f9f9f9;
+  min-width: 800px;
 }
 
 .yLabelsAndHeatmap {
   display: flex;
   flex-direction: column;
+  align-items: center;
+}
+.heatmapRowContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .row {
   display: flex;
   align-items: center;
+  justify-content: center;
   border-bottom: 1px solid #eee;
 }
 
 .yLabel {
   font-size: 12px;
-  width: 400px;
+  width: 300px;
   padding: 10px;
   white-space: nowrap;
   overflow: hidden;
@@ -57,6 +67,8 @@
 .heatmapRow {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-grow: 1;
 }
 
 .cell {
@@ -73,9 +85,10 @@
 
 .xLabels {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
+  width: 100%;
   font-size: 12px;
-  margin-left: 400px;
+  margin-left: 300px;
   border-top: 1px solid #eee;
   padding-top: 10px;
 }
@@ -91,7 +104,7 @@
 
 .buttonContainer {
   margin-top: 20px;
-  margin-left: 400px;
+  margin-left: 300px;
 }
 
 .button {
@@ -202,4 +215,54 @@
 
 .smallerText {
   font-size: 0.9em;
+}
+
+@media (min-width: 1200px) {
+  .container {
+    font-size: 16px;
+  }
+
+  .cell {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .xLabel {
+    width: 40px;
+    font-size: 12px;
+  }
+
+  .errorMessage {
+    font-size: 14px;
+  }
+
+  .moreButton {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .container {
+    font-size: 18px;
+  }
+
+  .cell {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .xLabel {
+    width: 50px;
+    font-size: 14px;
+  }
+
+  .errorMessage {
+    font-size: 16px;
+  }
+
+  .moreButton {
+    font-size: 16px;
+  }
 }

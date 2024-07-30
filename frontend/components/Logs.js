@@ -11,6 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import styles from "../styles/Logs.module.css";
 
 const LOGS_PER_PAGE = 12;
+const LOG_LEVELS = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
 
 export default function Logs({
   activeTab,
@@ -25,8 +26,13 @@ export default function Logs({
   const [selectedLogLevel, setSelectedLogLevel] = useState("ALL");
   const [selectedType, setSelectedType] = useState("ALL");
   const [timeRange, setTimeRange] = useState("30d");
-  const [logsInfo, setLogsInfo] = useState({ total: 0, error: 0, warn: 0, others: 0 });
-  const [openEvents, setOpenEvents] = useState({ ERROR: [], WARN: [] });
+  const [logsInfo, setLogsInfo] = useState({
+    total: 0,
+    ...Object.fromEntries(LOG_LEVELS.map((level) => [level.toLowerCase(), 0])),
+  });
+  const [openEvents, setOpenEvents] = useState(
+    Object.fromEntries(LOG_LEVELS.map((level) => [level, []]))
+  );
   const [sortConfig, setSortConfig] = useState({ key: "@timestamp", direction: "desc" });
   const [currentPage, setCurrentPage] = useState(1);
   const [visibleColumns, setVisibleColumns] = useState({
@@ -39,7 +45,6 @@ export default function Logs({
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [isAbsoluteTime, setIsAbsoluteTime] = useState(false);
-  const [hasErrors, setHasErrors] = useState(false);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -126,22 +131,22 @@ export default function Logs({
   const updateLogsInfo = useCallback((logs) => {
     const info = {
       total: logs.length,
-      error: logs.filter((log) => log["log.level"] === "error").length,
-      warn: logs.filter((log) => log["log.level"] === "warn").length,
-      others: logs.filter((log) => !["error", "warn"].includes(log["log.level"])).length,
+      ...Object.fromEntries(
+        LOG_LEVELS.map((level) => [
+          level.toLowerCase(),
+          logs.filter((log) => log["log.level"].toUpperCase() === level).length,
+        ])
+      ),
     };
     setLogsInfo(info);
   }, []);
 
   const updateOpenEvents = useCallback((logs) => {
-    const events = {
-      ERROR: [],
-      WARN: [],
-    };
+    const events = Object.fromEntries(LOG_LEVELS.map((level) => [level, []]));
     logs.forEach((log) => {
-      if (log["log.level"] === "error" || log["log.level"] === "warn") {
-        const key = log["log.level"].toUpperCase();
-        events[key].push({
+      const level = log["log.level"].toUpperCase();
+      if (LOG_LEVELS.includes(level)) {
+        events[level].push({
           message: log.message,
           time: log["@timestamp"],
         });
@@ -152,10 +157,6 @@ export default function Logs({
 
   const uniqueIds = useMemo(() => {
     return ["ALL", ...new Set(allLogs.map((log) => log.component?.id).filter(Boolean))];
-  }, [allLogs]);
-
-  const uniqueLogLevels = useMemo(() => {
-    return ["ALL", ...new Set(allLogs.map((log) => log["log.level"]))];
   }, [allLogs]);
 
   const uniqueTypes = useMemo(() => {
@@ -189,11 +190,6 @@ export default function Logs({
     }
   };
 
-  useEffect(() => {
-    const errorLogs = filteredAndSortedLogs.filter((log) => log["log.level"] === "error");
-    setHasErrors(errorLogs.length > 0);
-  }, [filteredAndSortedLogs]);
-
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
       <div className={styles.logsContainer}>
@@ -204,15 +200,20 @@ export default function Logs({
           <p className={styles.message}>Loading logs...</p>
         ) : (
           <div className={styles.content}>
-            {filteredAndSortedLogs.some((log) => log["log.level"] === "error") && (
-              <EventsOverTime
-                logs={filteredAndSortedLogs}
-                timeRange={timeRange}
-                startDate={startDate}
-                endDate={endDate}
-              />
-            )}
             <div className={styles.mainContent}>
+              <div className={styles.eventsAndInfo}>
+                <div className={styles.eventsOverTime}>
+                  <EventsOverTime
+                    logs={filteredAndSortedLogs}
+                    timeRange={timeRange}
+                    startDate={startDate}
+                    endDate={endDate}
+                  />
+                </div>
+                <div className={styles.logsInfoContainer}>
+                  <LogsInfo {...logsInfo} />
+                </div>
+              </div>
               <div className={styles.logsSection}>
                 <div className={styles.filters}>
                   <select
@@ -236,13 +237,11 @@ export default function Logs({
                     className={styles.select}
                   >
                     <option value="ALL">ALL Levels</option>
-                    {uniqueLogLevels
-                      .filter((level) => level !== "ALL")
-                      .map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
+                    {LOG_LEVELS.map((level) => (
+                      <option key={level} value={level}>
+                        {level}
+                      </option>
+                    ))}
                   </select>
 
                   <select
@@ -327,10 +326,9 @@ export default function Logs({
                   onPageChange={setCurrentPage}
                 />
               </div>
-              <div className={styles.sidebar}>
-                <LogsInfo {...logsInfo} />
-                <OpenEvents events={openEvents} />
-              </div>
+            </div>
+            <div className={styles.sidebar}>
+              <OpenEvents events={openEvents} />
             </div>
           </div>
         )}

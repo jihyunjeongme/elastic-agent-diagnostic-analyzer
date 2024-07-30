@@ -58,6 +58,34 @@
   opacity: 1;
 }
 
+.td.log\.level {
+  font-weight: bold;
+}
+
+.td.log\.level[data-level="FATAL"] {
+  color: #8b0000;
+}
+
+.td.log\.level[data-level="ERROR"] {
+  color: #dc3545;
+}
+
+.td.log\.level[data-level="WARN"] {
+  color: #ffc107;
+}
+
+.td.log\.level[data-level="INFO"] {
+  color: #6c757d;
+}
+
+.td.log\.level[data-level="DEBUG"] {
+  color: #17a2b8;
+}
+
+.td.log\.level[data-level="TRACE"] {
+  color: #28a745;
+}
+
 @media (hover: hover) {
   .resizer {
     opacity: 0;
@@ -65,5 +93,21 @@
 
   *:hover > .resizer {
     opacity: 1;
+  }
+}
+
+@media (min-width: 1200px) {
+  .th,
+  .td {
+    padding: 14px;
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .th,
+  .td {
+    padding: 16px;
+    font-size: 16px;
   }
 }

@@ -14,22 +14,77 @@
   color: #4a5568;
 }
 
+/* .content {
+  display: flex;
+  flex-direction: column;
+} */
+
 .content {
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 
-.mainContent {
+.topSection {
   display: flex;
   gap: 20px;
 }
 
+/* .mainContent {
+  display: flex;
+  gap: 20px;
+} */
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+}
+
 .logsSection {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar {
   width: 300px;
+}
+
+.eventsAndInfo {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.eventsOverTime {
+  flex: 1;
+}
+
+.logsInfoSidebar {
+  width: 300px;
+}
+
+.bottomSection {
+  display: flex;
+  gap: 20px;
+}
+
+.logsTableSection {
+  flex: 1;
+}
+
+.openEventsSidebar {
+  width: 300px;
+}
+
+.filters,
+.columnToggle {
+  margin-bottom: 10px;
+}
+
+.logsInfoContainer {
+  width: 300px;
+  min-width: 300px;
 }
 
 .filters {
@@ -84,4 +139,27 @@
 
 .toggleCheckbox {
   margin-right: 5px;
+}
+
+@media (max-width: 1200px) {
+  .mainContent {
+    flex-direction: column;
+  }
+
+  .logsInfoContainer {
+    width: 100%;
+  }
+  /* 
+  .sidebar {
+    width: 100%;
+    margin-top: 20px;
+  } */
+
+  .sidebar {
+    width: 300px;
+  }
+
+  .eventsAndInfo {
+    flex-direction: column;
+  }
 }

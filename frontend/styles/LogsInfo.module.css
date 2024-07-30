@@ -1,0 +1,153 @@
+.logsInfo {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 15px;
+}
+
+.count {
+  font-weight: bold;
+  color: #333;
+}
+
+.percentage {
+  font-weight: normal;
+  color: #666;
+  margin-left: 5px;
+}
+
+.percentageBar {
+  height: 20px;
+  display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #e9ecef;
+}
+
+/* .fatalBar,
+.errorBar,
+.warnBar,
+.infoBar,
+.debugBar,
+.traceBar {
+  height: 100%;
+} */
+
+.fatalBar {
+  background-color: #8b0000;
+}
+
+.errorBar {
+  background-color: #dc3545;
+}
+
+.warnBar {
+  background-color: #ffc107;
+}
+
+.infoBar {
+  background-color: #6c757d;
+}
+
+.debugBar {
+  background-color: #17a2b8;
+}
+
+.traceBar {
+  background-color: #28a745;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  margin-bottom: 5px;
+}
+
+.fatalLegend,
+.errorLegend,
+.warnLegend,
+.infoLegend,
+.debugLegend,
+.traceLegend {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  border-radius: 50%;
+}
+
+.fatalLegend {
+  background-color: #8b0000;
+}
+
+.errorLegend {
+  background-color: #dc3545;
+}
+
+.warnLegend {
+  background-color: #ffc107;
+}
+
+.infoLegend {
+  background-color: #6c757d;
+}
+
+.debugLegend {
+  background-color: #17a2b8;
+}
+
+.traceLegend {
+  background-color: #28a745;
+}
+
+/* 텍스트 색상 스타일 */
+.fatalText {
+  color: #8b0000;
+  font-weight: bold;
+}
+
+.errorText {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.warnText {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.infoText {
+  color: #6c757d;
+  font-weight: bold;
+}
+
+.debugText {
+  color: #17a2b8;
+  font-weight: bold;
+}
+
+.traceText {
+  color: #28a745;
+  font-weight: bold;
+}

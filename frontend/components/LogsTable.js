@@ -3,10 +3,6 @@ import { useTable, useSortBy, useBlockLayout, useResizeColumns } from "react-tab
 import styles from "../styles/LogsTable.module.css";
 
 export default function LogsTable({ logs, sortConfig, onSort, visibleColumns }) {
-  console.log("Received logs in LogsTable:", logs);
-  console.log("Received visibleColumns:", visibleColumns);
-
-  // 테이블 컬럼 정의
   const columns = useMemo(() => {
     const allColumns = [
       { Header: "Timestamp", accessor: "@timestamp", width: 180 },
@@ -18,21 +14,16 @@ export default function LogsTable({ logs, sortConfig, onSort, visibleColumns }) 
     return allColumns.filter((column) => visibleColumns && visibleColumns[column.accessor]);
   }, [visibleColumns]);
 
-  // 로그 데이터 처리
   const data = useMemo(() => {
-    console.log("Processing logs for table:", logs);
     return logs.map((log) => ({
       "@timestamp": log["@timestamp"] || "N/A",
-      "log.level": log["log.level"] || "N/A",
+      "log.level": log["log.level"]?.toUpperCase() || "N/A",
       message: log.message || "N/A",
       "component.id": log.component?.id || "N/A",
       "component.type": log.component?.type || "N/A",
     }));
   }, [logs]);
 
-  console.log("Processed data:", data);
-
-  // 기본 컬럼 설정
   const defaultColumn = React.useMemo(
     () => ({
       minWidth: 30,
@@ -42,7 +33,6 @@ export default function LogsTable({ logs, sortConfig, onSort, visibleColumns }) 
     []
   );
 
-  // react-table 훅 사용
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
       columns,
@@ -58,8 +48,6 @@ export default function LogsTable({ logs, sortConfig, onSort, visibleColumns }) 
     useResizeColumns,
     useSortBy
   );
-
-  console.log("Rows:", rows);
 
   return (
     <div className={styles.tableContainer}>
@@ -89,10 +77,13 @@ export default function LogsTable({ logs, sortConfig, onSort, visibleColumns }) 
             return (
               <tr {...row.getRowProps()} className={styles.tr}>
                 {row.cells.map((cell) => {
-                  // 셀 값이 null이면 원본 데이터에서 값을 가져옴
                   const cellValue = cell.value ?? row.original[cell.column.id];
                   return (
-                    <td {...cell.getCellProps()} className={styles.td}>
+                    <td
+                      {...cell.getCellProps()}
+                      className={`${styles.td} ${styles[cell.column.id]}`}
+                      data-level={cell.column.id === "log.level" ? cellValue : undefined}
+                    >
                       {cellValue}
                     </td>
                   );

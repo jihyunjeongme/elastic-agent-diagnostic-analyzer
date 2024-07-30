@@ -1,25 +1,57 @@
 import React from "react";
+import styles from "../styles/LogsInfo.module.css";
 
-const LogsInfo = ({ total, error, warn, others }) => {
+const LogsInfo = ({ total, fatal, error, warn, info, debug, trace }) => {
+  const calculatePercentage = (value) => ((value / total) * 100).toFixed(2);
+
+  const logLevels = [
+    { name: "Fatal", value: fatal, style: styles.fatalText, barStyle: styles.fatalBar },
+    { name: "Error", value: error, style: styles.errorText, barStyle: styles.errorBar },
+    { name: "Warn", value: warn, style: styles.warnText, barStyle: styles.warnBar },
+    { name: "Info", value: info, style: styles.infoText, barStyle: styles.infoBar },
+    { name: "Debug", value: debug, style: styles.debugText, barStyle: styles.debugBar },
+    { name: "Trace", value: trace, style: styles.traceText, barStyle: styles.traceBar },
+  ];
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-3">Logs Info</h2>
-      <div className="grid grid-cols-2 gap-2">
+    <div className={styles.logsInfo}>
+      <h2 className={styles.title}>Logs Info</h2>
+      <div className={styles.stats}>
         <div>
-          Total Logs: <span className="font-bold">{total}</span>
+          Total Logs: <span className={styles.count}>{total}</span>
         </div>
-        <div>
-          Errors: <span className="font-bold text-red-600">{error}</span>
-        </div>
-        <div>
-          Warnings: <span className="font-bold text-yellow-600">{warn}</span>
-        </div>
-        <div>
-          Others: <span className="font-bold text-blue-600">{others}</span>
-        </div>
+        {logLevels.map((level) => (
+          <div key={level.name} className={styles.logLevel}>
+            <span className={level.style}>{level.name}</span>:{" "}
+            <span className={styles.count}>
+              {level.value}{" "}
+              {level.value > 0 && (
+                <span className={styles.percentage}>({calculatePercentage(level.value)}%)</span>
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className={styles.percentageBar}>
+        {logLevels.map((level) => (
+          <div
+            key={level.name}
+            className={level.barStyle}
+            style={{ width: `${calculatePercentage(level.value)}%` }}
+            title={`${level.name}: ${calculatePercentage(level.value)}%`}
+          />
+        ))}
+      </div>
+      <div className={styles.legend}>
+        {logLevels.map((level) => (
+          <div key={level.name} className={styles.legendItem}>
+            <div className={styles[`${level.name.toLowerCase()}Legend`]} />
+            <span>{level.name}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
-export default React.memo(LogsInfo);
+export default LogsInfo;

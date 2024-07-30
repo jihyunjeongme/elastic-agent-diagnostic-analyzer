@@ -46,6 +46,18 @@ const OpenEvents = ({ events }) => {
     const totalPages = Math.ceil(totalItems / eventsPerPage);
     if (totalPages <= 1) return null;
 
+    const pageNumbers = [];
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
     return (
       <div className={styles.pagination}>
         {currentPage > 1 && (
@@ -53,13 +65,13 @@ const OpenEvents = ({ events }) => {
             Previous
           </button>
         )}
-        {[...Array(totalPages).keys()].map((num) => (
+        {pageNumbers.map((num) => (
           <button
             key={num}
-            onClick={() => setPage(num + 1)}
-            className={`${styles.pageButton} ${currentPage === num + 1 ? styles.activePage : ""}`}
+            onClick={() => setPage(num)}
+            className={`${styles.pageButton} ${currentPage === num ? styles.activePage : ""}`}
           >
-            {num + 1}
+            {num}
           </button>
         ))}
         {currentPage < totalPages && (

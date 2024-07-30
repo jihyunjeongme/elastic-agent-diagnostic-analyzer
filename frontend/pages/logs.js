@@ -23,8 +23,15 @@ export default function Logs() {
   const [selectedLogLevel, setSelectedLogLevel] = useState("ALL");
   const [selectedType, setSelectedType] = useState("ALL");
   const [timeRange, setTimeRange] = useState("30d");
-  const [logsInfo, setLogsInfo] = useState({ total: 0, error: 0, warn: 0, others: 0 });
-  const [openEvents, setOpenEvents] = useState({ ERROR: [], WARN: [] });
+  const [logsInfo, setLogsInfo] = useState({
+    total: 0,
+    error: 0,
+    warn: 0,
+    info: 0,
+    debug: 0,
+    trace: 0,
+  });
+  const [openEvents, setOpenEvents] = useState({ ERROR: [], WARN: [], INFO: [] });
   const [sortConfig, setSortConfig] = useState({ key: "@timestamp", direction: "desc" });
   const [currentPage, setCurrentPage] = useState(1);
   const [visibleColumns, setVisibleColumns] = useState({
@@ -68,10 +75,6 @@ export default function Logs() {
   }, [isFileUploaded, diagnosticInfo, setDiagnosticInfo]);
 
   const filteredAndSortedLogs = useMemo(() => {
-    console.log("Calculating filteredAndSortedLogs");
-    console.log("Current filters:", { selectedId, selectedLogLevel, selectedType, timeRange });
-    console.log("Total logs before filtering:", allLogs.length);
-
     const filtered = filterLogs(
       allLogs,
       selectedId,
@@ -82,19 +85,19 @@ export default function Logs() {
       endDate
     );
 
-    console.log("Filtered logs count after filtering:", filtered.length);
-
+    // 정렬 로직
     if (sortConfig.key) {
-      console.log("Sorting by:", sortConfig.key, "Direction:", sortConfig.direction);
       filtered.sort((a, b) => {
         let aValue = a[sortConfig.key];
         let bValue = b[sortConfig.key];
 
+        // component.id 및 component.type 처리
         if (sortConfig.key === "component.id" || sortConfig.key === "component.type") {
           aValue = a.component?.[sortConfig.key.split(".")[1]] || "";
           bValue = b.component?.[sortConfig.key.split(".")[1]] || "";
         }
 
+        // 정렬 방향에 따라 비교
         if (aValue < bValue) {
           return sortConfig.direction === "asc" ? -1 : 1;
         }
@@ -109,7 +112,7 @@ export default function Logs() {
   }, [
     allLogs,
     selectedId,
-    selectedLogLevel,
+    selectedLogLevel, // 필터링에 사용
     selectedType,
     timeRange,
     sortConfig,
@@ -141,9 +144,11 @@ export default function Logs() {
   const updateLogsInfo = useCallback((logs) => {
     const info = {
       total: logs.length,
-      error: logs.filter((log) => log["log.level"] === "error").length,
-      warn: logs.filter((log) => log["log.level"] === "warn").length,
-      others: logs.filter((log) => !["error", "warn"].includes(log["log.level"])).length,
+      error: logs.filter((log) => log["log.level"].toLowerCase() === "error").length,
+      warn: logs.filter((log) => log["log.level"].toLowerCase() === "warn").length,
+      info: logs.filter((log) => log["log.level"].toLowerCase() === "info").length,
+      debug: logs.filter((log) => log["log.level"].toLowerCase() === "debug").length,
+      trace: logs.filter((log) => log["log.level"].toLowerCase() === "trace").length,
     };
     setLogsInfo(info);
   }, []);
@@ -152,11 +157,12 @@ export default function Logs() {
     const events = {
       ERROR: [],
       WARN: [],
+      INFO: [],
     };
     logs.forEach((log) => {
-      if (log["log.level"] === "error" || log["log.level"] === "warn") {
-        const key = log["log.level"].toUpperCase();
-        events[key].push({
+      const level = log["log.level"].toUpperCase();
+      if (["ERROR", "WARN", "INFO"].includes(level)) {
+        events[level].push({
           message: log.message,
           time: log["@timestamp"],
         });
@@ -172,7 +178,10 @@ export default function Logs() {
   }, [allLogs]);
 
   const uniqueLogLevels = useMemo(() => {
+    // 전체 로그 레벨을 대문자로 변환
+    // const levels = ["ALL", ...new Set(allLogs.map((log) => log["log.level"].toUpperCase()))];
     const levels = ["ALL", ...new Set(allLogs.map((log) => log["log.level"]))];
+
     console.log("Unique Log Levels:", levels);
     return levels;
   }, [allLogs]);
@@ -212,7 +221,9 @@ export default function Logs() {
   };
 
   useEffect(() => {
-    const errorLogs = filteredAndSortedLogs.filter((log) => log["log.level"] === "error");
+    const errorLogs = filteredAndSortedLogs.filter(
+      (log) => log["log.level"].toLowerCase() === "error"
+    );
     setHasErrors(errorLogs.length > 0);
   }, [filteredAndSortedLogs]);
 
@@ -226,30 +237,25 @@ export default function Logs() {
           <p className={styles.message}>Loading logs...</p>
         ) : (
           <div className={styles.content}>
-            {filteredAndSortedLogs.some((log) => log["log.level"] === "error") && (
-              <EventsOverTime
-                logs={filteredAndSortedLogs}
-                timeRange={timeRange}
-                startDate={startDate}
-                endDate={endDate}
-              />
-            )}
-            <div className={styles.mainContent}>
-              <div className={styles.logsSection}>
+            <div className={styles.topSection}>
+              <div className={styles.eventsOverTime}>
+                <EventsOverTime
+                  logs={filteredAndSortedLogs}
+                  timeRange={timeRange}
+                  startDate={startDate}
+                  endDate={endDate}
+                />
+              </div>
+              {/* <div className={styles.logsInfoSidebar}>
+                <LogsInfo {...logsInfo} />
+              </div> */}
+            </div>
+            <div className={styles.bottomSection}>
+              <div className={styles.logsTableSection}>
                 <div className={styles.filters}>
                   <select
                     value={selectedId}
-                    onChange={(e) => {
-                      console.log("Selected ID changing from", selectedId, "to", e.target.value);
-                      setSelectedId(e.target.value);
-                      const immediateFilterResult = allLogs.filter(
-                        (log) => e.target.value === "ALL" || log.component?.id === e.target.value
-                      );
-                      console.log("Immediate filtering result:", {
-                        filteredCount: immediateFilterResult.length,
-                        firstFewLogs: immediateFilterResult.slice(0, 5),
-                      });
-                    }}
+                    onChange={(e) => setSelectedId(e.target.value)}
                     className={styles.select}
                   >
                     <option value="ALL">ALL Components</option>
@@ -261,13 +267,9 @@ export default function Logs() {
                         </option>
                       ))}
                   </select>
-
                   <select
                     value={selectedLogLevel}
-                    onChange={(e) => {
-                      console.log("Selected Log Level changed:", e.target.value);
-                      setSelectedLogLevel(e.target.value);
-                    }}
+                    onChange={(e) => setSelectedLogLevel(e.target.value)}
                     className={styles.select}
                   >
                     <option value="ALL">ALL Levels</option>
@@ -279,13 +281,9 @@ export default function Logs() {
                         </option>
                       ))}
                   </select>
-
                   <select
                     value={selectedType}
-                    onChange={(e) => {
-                      console.log("Selected Type changed:", e.target.value);
-                      setSelectedType(e.target.value);
-                    }}
+                    onChange={(e) => setSelectedType(e.target.value)}
                     className={styles.select}
                   >
                     <option value="ALL">ALL Types</option>
@@ -359,14 +357,13 @@ export default function Logs() {
                   onSort={handleSort}
                   visibleColumns={visibleColumns}
                 />
-                {console.log("Logs passed to LogsTable:", paginatedLogs.length)}
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
                 />
               </div>
-              <div className={styles.sidebar}>
+              <div className={styles.openEventsSidebar}>
                 <LogsInfo {...logsInfo} />
                 <OpenEvents events={openEvents} />
               </div>

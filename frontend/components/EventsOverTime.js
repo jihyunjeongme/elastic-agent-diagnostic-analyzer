@@ -8,14 +8,23 @@ const EventsOverTime = ({ logs, timeRange }) => {
   const [showMore, setShowMore] = useState(false);
   const [expandedMessage, setExpandedMessage] = useState(null);
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
-  const moreButtonRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    console.log("EventsOverTime - Received logs:", logs);
-    console.log("EventsOverTime - Time range:", timeRange);
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
 
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  useEffect(() => {
     if (!logs || logs.length === 0) {
-      console.log("EventsOverTime - No logs, returning");
       setData([]);
       setXLabels([]);
       setYLabels([]);
@@ -23,10 +32,8 @@ const EventsOverTime = ({ logs, timeRange }) => {
     }
 
     const errorLogs = logs.filter((log) => log["log.level"] === "error");
-    console.log("EventsOverTime - Filtered error logs:", errorLogs);
 
     if (errorLogs.length === 0) {
-      console.log("EventsOverTime - No error logs, clearing data");
       setData([]);
       setXLabels([]);
       setYLabels([]);
@@ -68,10 +75,6 @@ const EventsOverTime = ({ logs, timeRange }) => {
       allDates.map((date) => data.dates[date] || 0)
     );
 
-    console.log("EventsOverTime - Processed data:", heatmapData);
-    console.log("EventsOverTime - X labels:", allDates);
-    console.log("EventsOverTime - Y labels:", sortedErrors);
-
     setData(heatmapData);
     setXLabels(allDates);
     setYLabels(
@@ -107,7 +110,12 @@ const EventsOverTime = ({ logs, timeRange }) => {
     ).padStart(2, "0")}, ${date.toLocaleTimeString()}`;
   };
 
-  const truncateMessage = (message, maxLength = 50) => {
+  const getMessageLength = () => {
+    if (containerWidth < 768) return 50;
+    return 70;
+  };
+
+  const truncateMessage = (message, maxLength) => {
     if (message.length <= maxLength) return message;
     return message.substring(0, maxLength) + "...";
   };
@@ -139,24 +147,22 @@ const EventsOverTime = ({ logs, timeRange }) => {
   };
 
   if (data.length === 0) {
-    console.log("EventsOverTime - No data to display, returning null");
     return null;
   }
 
-  console.log("EventsOverTime - Rendering component");
-
   return (
-    <div className={styles.container}>
+    <div className={styles.container} ref={containerRef}>
       <h2 className={styles.title}>Events Over Time</h2>
       <div className={styles.heatmapContainer}>
         <div className={styles.yLabelsAndHeatmap}>
           {yLabels.map(({ message, log, firstTimestamp, lastTimestamp }, index) => (
             <div key={index} className={styles.row}>
               <div className={styles.yLabel}>
-                <span className={styles.errorMessage}>{truncateMessage(message)}</span>
-                {message.length > 50 && (
+                <span className={styles.errorMessage}>
+                  {truncateMessage(message, getMessageLength())}
+                </span>
+                {message.length > getMessageLength() && (
                   <button
-                    ref={moreButtonRef}
                     className={styles.moreButton}
                     onClick={(e) => handleMoreClick(message, log, firstTimestamp, lastTimestamp, e)}
                   >
