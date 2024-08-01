@@ -1,32 +1,51 @@
-import React, { useMemo } from "react";
-import { useTable, useSortBy, useBlockLayout, useResizeColumns } from "react-table";
-import styles from "../styles/LogsTable.module.css";
+import React, { useCallback } from "react";
+import { useTable, useSortBy, useResizeColumns, useBlockLayout } from "react-table";
 
-export default function LogsTable({ logs, sortConfig, onSort, visibleColumns }) {
-  const columns = useMemo(() => {
-    const allColumns = [
-      { Header: "Timestamp", accessor: "@timestamp", width: 180 },
-      { Header: "Level", accessor: "log.level", width: 80 },
-      { Header: "Message", accessor: "message", width: 300 },
-      { Header: "Component ID", accessor: "component.id", width: 150 },
-      { Header: "Type", accessor: "component.type", width: 100 },
-    ];
-    return allColumns.filter((column) => visibleColumns && visibleColumns[column.accessor]);
-  }, [visibleColumns]);
-
-  const data = useMemo(() => {
-    return logs.map((log) => ({
-      "@timestamp": log["@timestamp"] || "N/A",
-      "log.level": log["log.level"]?.toUpperCase() || "N/A",
-      message: log.message || "N/A",
-      "component.id": log.component?.id || "N/A",
-      "component.type": log.component?.type || "N/A",
-    }));
-  }, [logs]);
+const LogsTable = ({ logs, sortConfig, onSort, visibleColumns }) => {
+  const columns = React.useMemo(
+    () =>
+      Object.keys(visibleColumns)
+        .filter((key) => visibleColumns[key])
+        .map((key) => ({
+          Header: key,
+          accessor: key,
+          Cell: ({ value, row }) => {
+            if (key === "log.level") {
+              return (
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    value?.toLowerCase() === "error"
+                      ? "bg-red-100 text-red-800"
+                      : value?.toLowerCase() === "warn"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : value?.toLowerCase() === "info"
+                      ? "bg-blue-100 text-blue-800"
+                      : value?.toLowerCase() === "debug"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {value}
+                </span>
+              );
+            } else if (key === "component.id" || key === "component.type") {
+              return row.original.component?.[key.split(".")[1]] || "N/A";
+            } else if (key === "message") {
+              return (
+                <div className="truncate" title={value}>
+                  {value}
+                </div>
+              );
+            }
+            return value || "N/A";
+          },
+        })),
+    [visibleColumns]
+  );
 
   const defaultColumn = React.useMemo(
     () => ({
-      minWidth: 30,
+      minWidth: 100,
       width: 150,
       maxWidth: 400,
     }),
@@ -36,11 +55,9 @@ export default function LogsTable({ logs, sortConfig, onSort, visibleColumns }) 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
     {
       columns,
-      data,
+      data: logs,
       defaultColumn,
-      initialState: {
-        sortBy: [{ id: sortConfig.key, desc: sortConfig.direction === "desc" }],
-      },
+      initialState: { sortBy: [{ id: sortConfig.key, desc: sortConfig.direction === "desc" }] },
       manualSortBy: true,
       disableMultiSort: true,
     },
@@ -49,50 +66,69 @@ export default function LogsTable({ logs, sortConfig, onSort, visibleColumns }) 
     useSortBy
   );
 
+  const handleSort = useCallback(
+    (column) => {
+      onSort(column.id);
+    },
+    [onSort]
+  );
+
   return (
-    <div className={styles.tableContainer}>
-      <table {...getTableProps()} className={styles.table}>
-        <thead>
+    <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+      <div {...getTableProps()} className="inline-block min-w-full">
+        <div>
           {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()} className={styles.tr}>
+            <div {...headerGroup.getHeaderGroupProps()} className="bg-gray-50">
               {headerGroup.headers.map((column) => (
-                <th
-                  {...column.getHeaderProps(column.getSortByToggleProps())}
-                  className={styles.th}
-                  onClick={() => onSort(column.id)}
+                <div
+                  {...column.getHeaderProps()}
+                  className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer group"
+                  onClick={() => handleSort(column)}
                 >
-                  {column.render("Header")}
+                  <div className="flex items-center justify-between">
+                    {column.render("Header")}
+                    <span>{column.isSorted ? (column.isSortedDesc ? " ▼" : " ▲") : ""}</span>
+                  </div>
                   <div
                     {...column.getResizerProps()}
-                    className={`${styles.resizer} ${column.isResizing ? styles.isResizing : ""}`}
+                    className={`resizer ${column.isResizing ? "isResizing" : ""}`}
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top: 0,
+                      height: "100%",
+                      width: "5px",
+                      background: "rgba(0, 0, 0, 0.1)",
+                      cursor: "col-resize",
+                      userSelect: "none",
+                      touchAction: "none",
+                    }}
                   />
-                </th>
+                </div>
               ))}
-            </tr>
+            </div>
           ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
+        </div>
+        <div {...getTableBodyProps()}>
           {rows.map((row) => {
             prepareRow(row);
             return (
-              <tr {...row.getRowProps()} className={styles.tr}>
-                {row.cells.map((cell) => {
-                  const cellValue = cell.value ?? row.original[cell.column.id];
-                  return (
-                    <td
-                      {...cell.getCellProps()}
-                      className={`${styles.td} ${styles[cell.column.id]}`}
-                      data-level={cell.column.id === "log.level" ? cellValue : undefined}
-                    >
-                      {cellValue}
-                    </td>
-                  );
-                })}
-              </tr>
+              <div {...row.getRowProps()} className="hover:bg-gray-50">
+                {row.cells.map((cell) => (
+                  <div
+                    {...cell.getCellProps()}
+                    className="px-4 py-2 whitespace-nowrap text-sm text-gray-500"
+                  >
+                    {cell.render("Cell")}
+                  </div>
+                ))}
+              </div>
             );
           })}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default LogsTable;

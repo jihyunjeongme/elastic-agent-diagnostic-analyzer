@@ -1,54 +1,28 @@
 import React from "react";
-import styles from "../styles/LogsInfo.module.css";
 
-const LogsInfo = ({ total, fatal, error, warn, info, debug, trace }) => {
-  const calculatePercentage = (value) => ((value / total) * 100).toFixed(2);
-
-  const logLevels = [
-    { name: "Fatal", value: fatal, style: styles.fatalText, barStyle: styles.fatalBar },
-    { name: "Error", value: error, style: styles.errorText, barStyle: styles.errorBar },
-    { name: "Warn", value: warn, style: styles.warnText, barStyle: styles.warnBar },
-    { name: "Info", value: info, style: styles.infoText, barStyle: styles.infoBar },
-    { name: "Debug", value: debug, style: styles.debugText, barStyle: styles.debugBar },
-    { name: "Trace", value: trace, style: styles.traceText, barStyle: styles.traceBar },
-  ];
-
+const LogsInfo = ({ total, error, warn, info, debug, trace }) => {
   return (
-    <div className={styles.logsInfo}>
-      <h2 className={styles.title}>Logs Info</h2>
-      <div className={styles.stats}>
-        <div>
-          Total Logs: <span className={styles.count}>{total}</span>
-        </div>
-        {logLevels.map((level) => (
-          <div key={level.name} className={styles.logLevel}>
-            <span className={level.style}>{level.name}</span>:{" "}
-            <span className={styles.count}>
-              {level.value}{" "}
-              {level.value > 0 && (
-                <span className={styles.percentage}>({calculatePercentage(level.value)}%)</span>
-              )}
-            </span>
-          </div>
-        ))}
-      </div>
-      <div className={styles.percentageBar}>
-        {logLevels.map((level) => (
-          <div
-            key={level.name}
-            className={level.barStyle}
-            style={{ width: `${calculatePercentage(level.value)}%` }}
-            title={`${level.name}: ${calculatePercentage(level.value)}%`}
-          />
-        ))}
-      </div>
-      <div className={styles.legend}>
-        {logLevels.map((level) => (
-          <div key={level.name} className={styles.legendItem}>
-            <div className={styles[`${level.name.toLowerCase()}Legend`]} />
-            <span>{level.name}</span>
-          </div>
-        ))}
+    <div className="bg-gray-50 rounded-lg p-5 mb-5">
+      <h2 className="text-xl font-bold mb-4 text-gray-800">Logs Info</h2>
+      <div className="space-y-2">
+        <p className="text-sm">
+          Total: <span className="font-medium">{total}</span>
+        </p>
+        <p className="text-sm text-red-600">
+          Error: <span className="font-medium">{error}</span>
+        </p>
+        <p className="text-sm text-yellow-600">
+          Warn: <span className="font-medium">{warn}</span>
+        </p>
+        <p className="text-sm text-blue-600">
+          Info: <span className="font-medium">{info}</span>
+        </p>
+        <p className="text-sm text-green-600">
+          Debug: <span className="font-medium">{debug}</span>
+        </p>
+        <p className="text-sm text-purple-600">
+          Trace: <span className="font-medium">{trace}</span>
+        </p>
       </div>
     </div>
   );

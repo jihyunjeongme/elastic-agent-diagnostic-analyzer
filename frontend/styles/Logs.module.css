@@ -1,165 +1,113 @@
 .logsContainer {
-  padding: 20px;
+  @apply p-8 bg-gray-50;
 }
 
 .title {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2d3748;
-  margin-bottom: 20px;
+  @apply text-3xl font-bold text-gray-800 mb-6;
 }
 
 .message {
-  font-size: 18px;
-  color: #4a5568;
+  @apply text-lg text-gray-600;
 }
 
-/* .content {
-  display: flex;
-  flex-direction: column;
-} */
-
 .content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  @apply flex flex-col space-y-6;
 }
 
 .topSection {
-  display: flex;
-  gap: 20px;
-}
-
-/* .mainContent {
-  display: flex;
-  gap: 20px;
-} */
-
-.mainContent {
-  display: flex;
-  flex-direction: column;
-}
-
-.logsSection {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar {
-  width: 300px;
-}
-
-.eventsAndInfo {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
+  @apply w-full;
 }
 
 .eventsOverTime {
-  flex: 1;
-}
-
-.logsInfoSidebar {
-  width: 300px;
+  @apply w-full h-80;
 }
 
 .bottomSection {
-  display: flex;
-  gap: 20px;
+  @apply flex flex-col lg:flex-row lg:space-x-10;
 }
 
 .logsTableSection {
-  flex: 1;
-}
-
-.openEventsSidebar {
-  width: 300px;
-}
-
-.filters,
-.columnToggle {
-  margin-bottom: 10px;
-}
-
-.logsInfoContainer {
-  width: 300px;
-  min-width: 300px;
+  @apply flex-grow lg:w-3/4;
 }
 
 .filters {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  @apply flex flex-wrap gap-4 mb-6;
 }
 
 .select {
-  padding: 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  background-color: white;
-  font-size: 14px;
+  @apply px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white;
 }
 
 .datePickerContainer {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+  @apply flex items-center space-x-4 flex-wrap;
 }
 
 .datePicker {
-  padding: 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  font-size: 14px;
+  @apply px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
 .button {
-  padding: 8px 12px;
-  background-color: #4299e1;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
+  @apply px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition duration-150 ease-in-out;
 }
 
 .columnToggle {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
+  @apply flex flex-wrap gap-4 mb-4;
+}
+
+.openEventsSidebar {
+  @apply lg:w-1/4 space-y-6;
 }
 
 .toggleLabel {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
+  @apply flex items-center text-sm;
 }
 
 .toggleCheckbox {
-  margin-right: 5px;
+  @apply mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
 }
 
-@media (max-width: 1200px) {
-  .mainContent {
-    flex-direction: column;
+/* 로그 테이블 스타일 */
+.logsTable {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+.logsTable th {
+  @apply px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+.logsTable td {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+}
+
+.logsTable tr:nth-child(even) {
+  @apply bg-gray-50;
+}
+
+/* 페이지네이션 스타일 */
+.pagination {
+  @apply flex justify-center space-x-2 mt-6;
+}
+
+.paginationButton {
+  @apply px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100 transition duration-150 ease-in-out;
+}
+
+.paginationButton.active {
+  @apply bg-blue-500 text-white;
+}
+
+/* 리사이저 스타일 */
+.resizer {
+  @apply absolute right-0 top-0 h-full w-1 bg-gray-300 cursor-col-resize z-10;
+}
+
+@media (max-width: 1023px) {
+  .bottomSection {
+    @apply flex-col space-y-6;
   }
 
-  .logsInfoContainer {
-    width: 100%;
-  }
-  /* 
-  .sidebar {
-    width: 100%;
-    margin-top: 20px;
-  } */
-
-  .sidebar {
-    width: 300px;
-  }
-
-  .eventsAndInfo {
-    flex-direction: column;
+  .logsTableSection,
+  .openEventsSidebar {
+    @apply w-full;
   }
 }
