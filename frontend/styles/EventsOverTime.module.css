@@ -1,120 +1,142 @@
 .eventsOverTime {
-  @apply w-full;
+  @apply w-full bg-white rounded-lg shadow-md p-6 mb-6 overflow-hidden;
+}
+
+.title {
+  @apply text-2xl font-bold mb-6 text-gray-800; /* 여백 증가 */
 }
 
 .heatmapContainer {
-  @apply flex flex-col items-start overflow-x-auto border border-gray-300 rounded-lg p-5 bg-gray-50 min-w-[800px];
+  @apply flex flex-col items-start overflow-x-auto border border-gray-200 rounded-lg bg-white;
+  padding: 20px 0 80px 0;
+  position: relative;
 }
 
-.yLabelsAndHeatmap {
+.heatmapContent {
   @apply flex w-full;
 }
 
-.yLabels {
+.labels {
   @apply flex flex-col justify-center mr-2;
 }
 
-.yLabel {
-  @apply text-xs whitespace-nowrap overflow-hidden truncate max-w-[300px] h-[30px] flex items-center justify-between px-2 py-2 border-r border-gray-200;
+.label {
+  @apply text-sm whitespace-nowrap overflow-hidden h-[40px] flex items-center px-2 py-2 border-r border-gray-200;
 }
 
-.errorMessage {
-  @apply flex-1 overflow-hidden truncate;
-}
-
-.heatmapWrapper {
-  @apply flex-grow;
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
-  grid-auto-rows: 30px;
-}
-
-.cell {
-  @apply flex items-center justify-center text-xs font-bold text-gray-800 border border-white;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.xLabels {
-  @apply flex justify-start w-full text-xs border-t border-gray-200 pt-2 pl-[300px];
-}
-
-.xLabel {
-  @apply w-[30px] py-1 mr-0.5 text-left;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-}
-
-.buttonContainer {
-  @apply mt-5 text-center;
-}
-
-.button {
-  @apply px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300;
+.labelText {
+  @apply flex-1 overflow-hidden text-ellipsis whitespace-nowrap;
 }
 
 .moreButton {
-  @apply bg-transparent border-none text-blue-500 cursor-pointer text-xs p-0 ml-1 whitespace-nowrap hover:underline;
+  @apply bg-transparent border-none text-blue-500 cursor-pointer text-xs p-0 ml-1 whitespace-nowrap hover:underline flex-shrink-0;
 }
 
-.popup {
+.heatmap {
+  @apply flex-grow relative;
+  overflow: visible;
+}
+
+.heatmapGrid {
+  @apply grid absolute top-0 left-0;
+  grid-auto-rows: 40px;
+}
+
+.heatmapCell {
+  @apply flex items-center justify-center text-xs font-bold text-gray-800 border-r border-b border-white;
+}
+
+.xLabels {
+  @apply flex justify-start w-full text-xs border-t border-gray-200 pt-2;
+  position: relative;
+  height: 60px; /* x축 레이블을 위한 공간 */
+}
+
+.xLabel {
+  @apply flex flex-col items-center justify-start;
+}
+
+.xLabelText {
+  @apply mt-12 transform -rotate-90 origin-top-left translate-y-full whitespace-nowrap;
+  margin-left: 4rem; /* 오른쪽으로 5픽셀 이동 */
+}
+
+.showMoreContainer {
+  @apply mt-4 text-center w-full;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: 20px;
+  background-color: white;
+  z-index: 10; /* 다른 요소들 위에 표시되도록 z-index 추가 */
+}
+
+.showMoreButton {
+  @apply px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300;
+}
+
+.noData {
+  @apply text-center text-gray-500;
+}
+
+.modal {
   @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
 }
 
-.popupContent {
+.modalContent {
   @apply bg-white p-6 rounded-lg max-w-2xl max-h-[80vh] overflow-y-auto relative;
 }
 
-.popupTitle {
-  @apply text-lg font-bold mb-4;
-}
-
-.popupLabel {
-  @apply font-bold text-gray-600 inline-block w-[120px] mr-2;
-}
-
-.popupValue {
-  @apply text-gray-800;
+.modalTitle {
+  @apply text-xl font-bold mb-4 text-blue-600;
 }
 
 .closeButton {
-  @apply absolute top-2 right-2 bg-red-500 text-white border-none rounded-full w-6 h-6 text-base leading-6 text-center cursor-pointer hover:bg-red-600;
+  @apply absolute top-2 right-2 bg-gray-200 text-gray-600 border-none rounded-full w-8 h-8 text-base leading-8 text-center cursor-pointer hover:bg-gray-300;
 }
 
-@media (min-width: 1200px) {
-  .heatmapWrapper {
-    grid-auto-rows: 40px;
-  }
-
-  .cell {
-    @apply text-sm;
-  }
-
-  .xLabel {
-    @apply w-[40px] text-xs;
-  }
-
-  .errorMessage,
-  .moreButton {
-    @apply text-sm;
-  }
+.modalField {
+  @apply mb-2;
 }
 
-@media (min-width: 1600px) {
-  .heatmapWrapper {
-    grid-auto-rows: 50px;
-  }
+.modalField strong {
+  @apply font-semibold text-gray-700 inline-block w-[140px] mr-2 align-top;
+}
 
-  .cell {
-    @apply text-base;
-  }
+.messageValue {
+  @apply inline-block w-[calc(100%-160px)] align-top;
+}
 
-  .xLabel {
-    @apply w-[50px] text-sm;
-  }
+.select {
+  @apply px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white;
+}
 
-  .errorMessage,
-  .moreButton {
-    @apply text-base;
-  }
+/* Log level styles */
+.logLevel {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.errorLevel {
+  @apply bg-red-100 text-red-800;
+}
+
+.warnLevel {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.infoLevel {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.debugLevel {
+  @apply bg-green-100 text-green-800;
+}
+
+.traceLevel {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.fatalLevel {
+  @apply bg-red-200 text-red-900;
 }

@@ -4,12 +4,9 @@ import LogsInfo from "../components/LogsInfo";
 import LogsTable from "../components/LogsTable";
 import { useDiagnostic } from "../contexts/DiagnosticContext";
 import OpenEvents from "../components/OpenEvents";
-import Pagination from "../components/Pagination";
 import EventsOverTime from "../components/EventsOverTime";
 import { readLogsFromZip, filterLogs } from "../utils/logHandler";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import styles from "../styles/Logs.module.css";
 
 const LOGS_PER_PAGE = 12;
 
@@ -30,6 +27,7 @@ export default function Logs() {
     info: 0,
     debug: 0,
     trace: 0,
+    fatal: 0,
   });
   const [openEvents, setOpenEvents] = useState({ ERROR: [], WARN: [], INFO: [] });
   const [sortConfig, setSortConfig] = useState({ key: "@timestamp", direction: "desc" });
@@ -44,7 +42,6 @@ export default function Logs() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [isAbsoluteTime, setIsAbsoluteTime] = useState(false);
-  const [hasErrors, setHasErrors] = useState(false);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -52,7 +49,6 @@ export default function Logs() {
         setLoading(true);
         try {
           const fetchedLogs = await readLogsFromZip(window.zipContents);
-          console.log("Fetched logs:", fetchedLogs.length);
           setAllLogs(fetchedLogs);
           setDiagnosticInfo((prev) => ({ ...prev, logs: fetchedLogs }));
         } catch (error) {
@@ -75,7 +71,7 @@ export default function Logs() {
   }, [isFileUploaded, diagnosticInfo, setDiagnosticInfo]);
 
   const filteredAndSortedLogs = useMemo(() => {
-    const filtered = filterLogs(
+    return filterLogs(
       allLogs,
       selectedId,
       selectedLogLevel,
@@ -84,35 +80,12 @@ export default function Logs() {
       startDate,
       endDate
     );
-
-    if (sortConfig.key) {
-      filtered.sort((a, b) => {
-        let aValue = a[sortConfig.key];
-        let bValue = b[sortConfig.key];
-
-        if (sortConfig.key === "component.id" || sortConfig.key === "component.type") {
-          aValue = a.component?.[sortConfig.key.split(".")[1]] || "";
-          bValue = b.component?.[sortConfig.key.split(".")[1]] || "";
-        }
-
-        if (aValue < bValue) {
-          return sortConfig.direction === "asc" ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === "asc" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-
-    return filtered;
   }, [
     allLogs,
     selectedId,
     selectedLogLevel,
     selectedType,
     timeRange,
-    sortConfig,
     isAbsoluteTime,
     startDate,
     endDate,
@@ -120,23 +93,14 @@ export default function Logs() {
 
   const paginatedLogs = useMemo(() => {
     const startIndex = (currentPage - 1) * LOGS_PER_PAGE;
-    const paginatedResult = filteredAndSortedLogs.slice(startIndex, startIndex + LOGS_PER_PAGE);
-    console.log("Paginated logs:", {
-      totalFiltered: filteredAndSortedLogs.length,
-      currentPage,
-      logsPerPage: LOGS_PER_PAGE,
-      paginatedCount: paginatedResult.length,
-    });
-    return paginatedResult;
+    return filteredAndSortedLogs.slice(startIndex, startIndex + LOGS_PER_PAGE);
   }, [filteredAndSortedLogs, currentPage]);
 
   useEffect(() => {
-    console.log("filteredAndSortedLogs changed, new length:", filteredAndSortedLogs.length);
-    console.log("paginatedLogs:", paginatedLogs.length);
     updateLogsInfo(filteredAndSortedLogs);
     updateOpenEvents(filteredAndSortedLogs);
     setCurrentPage(1);
-  }, [filteredAndSortedLogs, paginatedLogs]);
+  }, [filteredAndSortedLogs]);
 
   const updateLogsInfo = useCallback((logs) => {
     const info = {
@@ -146,6 +110,7 @@ export default function Logs() {
       info: logs.filter((log) => log["log.level"].toLowerCase() === "info").length,
       debug: logs.filter((log) => log["log.level"].toLowerCase() === "debug").length,
       trace: logs.filter((log) => log["log.level"].toLowerCase() === "trace").length,
+      fatal: logs.filter((log) => log["log.level"].toLowerCase() === "fatal").length,
     };
     setLogsInfo(info);
   }, []);
@@ -169,25 +134,18 @@ export default function Logs() {
   }, []);
 
   const uniqueIds = useMemo(() => {
-    const ids = ["ALL", ...new Set(allLogs.map((log) => log.component?.id).filter(Boolean))];
-    console.log("Unique IDs:", ids);
-    return ids;
+    return ["ALL", ...new Set(allLogs.map((log) => log.component?.id).filter(Boolean))];
   }, [allLogs]);
 
   const uniqueLogLevels = useMemo(() => {
-    const levels = ["ALL", ...new Set(allLogs.map((log) => log["log.level"]))];
-    console.log("Unique Log Levels:", levels);
-    return levels;
+    return ["ALL", ...new Set(allLogs.map((log) => log["log.level"]))];
   }, [allLogs]);
 
   const uniqueTypes = useMemo(() => {
-    const types = ["ALL", ...new Set(allLogs.map((log) => log.component?.type).filter(Boolean))];
-    console.log("Unique Types:", types);
-    return types;
+    return ["ALL", ...new Set(allLogs.map((log) => log.component?.type).filter(Boolean))];
   }, [allLogs]);
 
   const handleSort = useCallback((key) => {
-    console.log("Sorting by:", key);
     setSortConfig((prevConfig) => ({
       key,
       direction: prevConfig.key === key && prevConfig.direction === "asc" ? "desc" : "asc",
@@ -214,149 +172,57 @@ export default function Logs() {
     }
   };
 
-  useEffect(() => {
-    const errorLogs = filteredAndSortedLogs.filter(
-      (log) => log["log.level"].toLowerCase() === "error"
-    );
-    setHasErrors(errorLogs.length > 0);
-  }, [filteredAndSortedLogs]);
-
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-      <div className={styles.logsContainer}>
-        <h1 className={styles.title}>Logs Details</h1>
+      <div className="p-8 bg-gray-50">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Logs Details</h1>
         {!isFileUploaded ? (
-          <p className={styles.message}>Please upload a diagnostic bundle first.</p>
+          <p className="text-lg text-gray-600">Please upload a diagnostic bundle first.</p>
         ) : loading ? (
-          <p className={styles.message}>Loading logs...</p>
+          <p className="text-lg text-gray-600">Loading logs...</p>
         ) : (
-          <div className={styles.content}>
-            <div className={styles.topSection}>
-              <div className={styles.eventsOverTime}>
-                <EventsOverTime
-                  logs={filteredAndSortedLogs}
-                  timeRange={timeRange}
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </div>
+          <div className="flex flex-col space-y-6">
+            <div className="w-full">
+              <EventsOverTime
+                logs={filteredAndSortedLogs}
+                timeRange={timeRange}
+                startDate={startDate}
+                endDate={endDate}
+              />
             </div>
-            <div className={styles.bottomSection}>
-              <div className={styles.logsTableSection}>
-                <div className={styles.filters}>
-                  <select
-                    value={selectedId}
-                    onChange={(e) => setSelectedId(e.target.value)}
-                    className={styles.select}
-                  >
-                    <option value="ALL">ALL Components</option>
-                    {uniqueIds
-                      .filter((id) => id !== "ALL")
-                      .map((id) => (
-                        <option key={id} value={id}>
-                          {id}
-                        </option>
-                      ))}
-                  </select>
-                  <select
-                    value={selectedLogLevel}
-                    onChange={(e) => setSelectedLogLevel(e.target.value)}
-                    className={styles.select}
-                  >
-                    <option value="ALL">ALL Levels</option>
-                    {uniqueLogLevels
-                      .filter((level) => level !== "ALL")
-                      .map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
-                  </select>
-                  <select
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                    className={styles.select}
-                  >
-                    <option value="ALL">ALL Types</option>
-                    {uniqueTypes
-                      .filter((type) => type !== "ALL")
-                      .map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                  </select>
-                  {isAbsoluteTime ? (
-                    <div className={styles.datePickerContainer}>
-                      <DatePicker
-                        selected={startDate}
-                        onChange={(date) => setStartDate(date)}
-                        selectsStart
-                        startDate={startDate}
-                        endDate={endDate}
-                        placeholderText="Start Date"
-                        className={styles.datePicker}
-                      />
-                      <DatePicker
-                        selected={endDate}
-                        onChange={(date) => setEndDate(date)}
-                        selectsEnd
-                        startDate={startDate}
-                        endDate={endDate}
-                        minDate={startDate}
-                        placeholderText="End Date"
-                        className={styles.datePicker}
-                      />
-                      <button onClick={() => setIsAbsoluteTime(false)} className={styles.button}>
-                        Use Relative Time
-                      </button>
-                    </div>
-                  ) : (
-                    <select
-                      value={timeRange}
-                      onChange={(e) => handleTimeRangeChange(e.target.value)}
-                      className={styles.select}
-                    >
-                      <option value="1d">Last 24 hours</option>
-                      <option value="7d">Last 7 days</option>
-                      <option value="30d">Last 30 days</option>
-                      <option value="3m">3 months</option>
-                      <option value="6m">6 months</option>
-                      <option value="1y">1 year</option>
-                      <option value="3y">3 years</option>
-                      <option value="5y">5 years</option>
-                      <option value="absolute">Absolute</option>
-                    </select>
-                  )}
-                </div>
-                <div className={styles.columnToggle}>
-                  {Object.keys(visibleColumns).map((columnKey) => (
-                    <label key={columnKey} className={styles.toggleLabel}>
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns[columnKey]}
-                        onChange={() => handleColumnToggle(columnKey)}
-                        className={styles.toggleCheckbox}
-                      />
-                      {columnKey}
-                    </label>
-                  ))}
-                </div>
+            <div className="flex flex-col lg:flex-row lg:space-x-10">
+              <div className="flex-grow lg:w-3/4">
                 <LogsTable
                   logs={paginatedLogs}
                   sortConfig={sortConfig}
                   onSort={handleSort}
                   visibleColumns={visibleColumns}
-                />
-                <Pagination
+                  selectedLogLevel={selectedLogLevel}
+                  setSelectedLogLevel={setSelectedLogLevel}
+                  selectedId={selectedId}
+                  setSelectedId={setSelectedId}
+                  selectedType={selectedType}
+                  setSelectedType={setSelectedType}
+                  uniqueIds={uniqueIds}
+                  uniqueLogLevels={uniqueLogLevels}
+                  uniqueTypes={uniqueTypes}
+                  timeRange={timeRange}
+                  handleTimeRangeChange={handleTimeRangeChange}
+                  isAbsoluteTime={isAbsoluteTime}
+                  setIsAbsoluteTime={setIsAbsoluteTime}
+                  startDate={startDate}
+                  setStartDate={setStartDate}
+                  endDate={endDate}
+                  setEndDate={setEndDate}
+                  handleColumnToggle={handleColumnToggle}
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
                 />
               </div>
-              <div className={styles.openEventsSidebar}>
+              <div className="lg:w-1/4 space-y-6">
                 <LogsInfo {...logsInfo} />
-                <OpenEvents events={openEvents} />
+                <OpenEvents events={openEvents} selectedLogLevel={selectedLogLevel} />
               </div>
             </div>
           </div>

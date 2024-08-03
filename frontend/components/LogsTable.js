@@ -1,8 +1,49 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useTable, useSortBy, useResizeColumns, useBlockLayout } from "react-table";
+import DatePicker from "react-datepicker";
+import Pagination from "./Pagination";
+import styles from "../styles/LogsTable.module.css";
 
-const LogsTable = ({ logs, sortConfig, onSort, visibleColumns }) => {
-  const columns = React.useMemo(
+const LogsTable = ({
+  logs,
+  sortConfig,
+  onSort,
+  visibleColumns,
+  selectedId,
+  setSelectedId,
+  selectedLogLevel,
+  setSelectedLogLevel,
+  selectedType,
+  setSelectedType,
+  uniqueIds,
+  uniqueLogLevels,
+  uniqueTypes,
+  timeRange,
+  handleTimeRangeChange,
+  isAbsoluteTime,
+  setIsAbsoluteTime,
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
+  handleColumnToggle,
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
+  const logLevelColors = useMemo(
+    () => ({
+      ERROR: styles.errorLevel,
+      WARN: styles.warnLevel,
+      INFO: styles.infoLevel,
+      DEBUG: styles.debugLevel,
+      TRACE: styles.traceLevel,
+      FATAL: styles.fatalLevel,
+    }),
+    []
+  );
+
+  const columns = useMemo(
     () =>
       Object.keys(visibleColumns)
         .filter((key) => visibleColumns[key])
@@ -13,16 +54,8 @@ const LogsTable = ({ logs, sortConfig, onSort, visibleColumns }) => {
             if (key === "log.level") {
               return (
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    value?.toLowerCase() === "error"
-                      ? "bg-red-100 text-red-800"
-                      : value?.toLowerCase() === "warn"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : value?.toLowerCase() === "info"
-                      ? "bg-blue-100 text-blue-800"
-                      : value?.toLowerCase() === "debug"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
+                  className={`${styles.badge} ${
+                    logLevelColors[value?.toUpperCase()] || styles.defaultLevel
                   }`}
                 >
                   {value}
@@ -32,7 +65,7 @@ const LogsTable = ({ logs, sortConfig, onSort, visibleColumns }) => {
               return row.original.component?.[key.split(".")[1]] || "N/A";
             } else if (key === "message") {
               return (
-                <div className="truncate" title={value}>
+                <div className={styles.messageCell} title={value}>
                   {value}
                 </div>
               );
@@ -40,12 +73,12 @@ const LogsTable = ({ logs, sortConfig, onSort, visibleColumns }) => {
             return value || "N/A";
           },
         })),
-    [visibleColumns]
+    [visibleColumns, logLevelColors]
   );
 
-  const defaultColumn = React.useMemo(
+  const defaultColumn = useMemo(
     () => ({
-      minWidth: 100,
+      minWidth: 30,
       width: 150,
       maxWidth: 400,
     }),
@@ -74,59 +107,153 @@ const LogsTable = ({ logs, sortConfig, onSort, visibleColumns }) => {
   );
 
   return (
-    <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-      <div {...getTableProps()} className="inline-block min-w-full">
-        <div>
-          {headerGroups.map((headerGroup) => (
-            <div {...headerGroup.getHeaderGroupProps()} className="bg-gray-50">
-              {headerGroup.headers.map((column) => (
-                <div
-                  {...column.getHeaderProps()}
-                  className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer group"
-                  onClick={() => handleSort(column)}
-                >
-                  <div className="flex items-center justify-between">
-                    {column.render("Header")}
-                    <span>{column.isSorted ? (column.isSortedDesc ? " ▼" : " ▲") : ""}</span>
-                  </div>
-                  <div
-                    {...column.getResizerProps()}
-                    className={`resizer ${column.isResizing ? "isResizing" : ""}`}
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: 0,
-                      height: "100%",
-                      width: "5px",
-                      background: "rgba(0, 0, 0, 0.1)",
-                      cursor: "col-resize",
-                      userSelect: "none",
-                      touchAction: "none",
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <div {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            return (
-              <div {...row.getRowProps()} className="hover:bg-gray-50">
-                {row.cells.map((cell) => (
-                  <div
-                    {...cell.getCellProps()}
-                    className="px-4 py-2 whitespace-nowrap text-sm text-gray-500"
-                  >
-                    {cell.render("Cell")}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
+    <div className={styles.tableContainer}>
+      <h2 className={styles.title}>Log Table</h2>
+      <div className={styles.filters}>
+        <select
+          value={selectedId}
+          onChange={(e) => setSelectedId(e.target.value)}
+          className={styles.select}
+        >
+          <option value="ALL">ALL Components</option>
+          {uniqueIds
+            .filter((id) => id !== "ALL")
+            .map((id) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+        </select>
+
+        <select
+          value={selectedLogLevel}
+          onChange={(e) => setSelectedLogLevel(e.target.value)}
+          className={styles.select}
+        >
+          <option value="ALL">ALL Levels</option>
+          {uniqueLogLevels
+            .filter((level) => level !== "ALL")
+            .map((level) => (
+              <option key={level} value={level}>
+                {level}
+              </option>
+            ))}
+        </select>
+
+        <select
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          className={styles.select}
+        >
+          <option value="ALL">ALL Types</option>
+          {uniqueTypes
+            .filter((type) => type !== "ALL")
+            .map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+        </select>
+
+        {isAbsoluteTime ? (
+          <div className={styles.datePickerContainer}>
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              placeholderText="Start Date"
+              className={styles.datePicker}
+            />
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
+              placeholderText="End Date"
+              className={styles.datePicker}
+            />
+            <button onClick={() => setIsAbsoluteTime(false)} className={styles.button}>
+              Use Relative Time
+            </button>
+          </div>
+        ) : (
+          <select
+            value={timeRange}
+            onChange={(e) => handleTimeRangeChange(e.target.value)}
+            className={styles.select}
+          >
+            <option value="1d">Last 24 hours</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="3m">3 months</option>
+            <option value="6m">6 months</option>
+            <option value="1y">1 year</option>
+            <option value="3y">3 years</option>
+            <option value="5y">5 years</option>
+            <option value="absolute">Absolute</option>
+          </select>
+        )}
       </div>
+
+      <div className={styles.columnToggle}>
+        {Object.keys(visibleColumns).map((columnKey) => (
+          <label key={columnKey} className={styles.toggleLabel}>
+            <input
+              type="checkbox"
+              checked={visibleColumns[columnKey]}
+              onChange={() => handleColumnToggle(columnKey)}
+              className={styles.toggleCheckbox}
+            />
+            {columnKey}
+          </label>
+        ))}
+      </div>
+
+      <div className={styles.tableWrapper}>
+        <table {...getTableProps()} className={styles.table}>
+          <thead>
+            {headerGroups.map((headerGroup) => (
+              <tr {...headerGroup.getHeaderGroupProps()} className={styles.headerGroup}>
+                {headerGroup.headers.map((column) => (
+                  <th
+                    {...column.getHeaderProps(column.getSortByToggleProps())}
+                    className={styles.th}
+                    onClick={() => handleSort(column)}
+                  >
+                    {column.render("Header")}
+                    <div
+                      {...column.getResizerProps()}
+                      className={`${styles.resizer} ${column.isResizing ? "isResizing" : ""}`}
+                    />
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody {...getTableBodyProps()} className={styles.tbody}>
+            {rows.map((row) => {
+              prepareRow(row);
+              return (
+                <tr {...row.getRowProps()} className={styles.tr}>
+                  {row.cells.map((cell) => {
+                    return (
+                      <td {...cell.getCellProps()} className={styles.td}>
+                        {cell.render("Cell")}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
     </div>
   );
 };

@@ -1,23 +1,40 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
+import styles from "../styles/EventsOverTime.module.css";
+import { format } from "date-fns";
 
 const EventsOverTime = ({ logs }) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [showMore, setShowMore] = useState(false);
   const [selectedError, setSelectedError] = useState(null);
   const [labelWidth, setLabelWidth] = useState(400);
+  const [textWidth, setTextWidth] = useState({});
+  const [selectedLogLevel, setSelectedLogLevel] = useState("ALL");
+
+  const logLevelColors = {
+    ERROR: "rgb(248,113,113)",
+    WARN: "rgb(251,191,36)",
+    INFO: "rgb(96,165,250)",
+    DEBUG: "rgb(52,211,153)",
+    TRACE: "rgb(209,213,219)",
+    FATAL: "rgb(220,38,38)",
+  };
 
   const processedData = useMemo(() => {
     if (!logs || logs.length === 0) {
-      return { data: [], xLabels: [], yLabels: [] };
+      return { data: [], xLabels: [], yLabels: [], totalLogs: 0 };
     }
 
-    const errorLogs = logs.filter((log) => log["log.level"]?.toLowerCase() === "error");
-    const groupedErrors = {};
+    const filteredLogs =
+      selectedLogLevel === "ALL"
+        ? logs
+        : logs.filter((log) => log["log.level"]?.toUpperCase() === selectedLogLevel);
 
-    errorLogs.forEach((log) => {
+    const groupedLogs = {};
+
+    filteredLogs.forEach((log) => {
       const date = new Date(log["@timestamp"]).toISOString().split("T")[0];
-      if (!groupedErrors[log.message]) {
-        groupedErrors[log.message] = {
+      if (!groupedLogs[log.message]) {
+        groupedLogs[log.message] = {
           total: 0,
           dates: {},
           log,
@@ -25,41 +42,45 @@ const EventsOverTime = ({ logs }) => {
           lastTimestamp: log["@timestamp"],
         };
       }
-      groupedErrors[log.message].total++;
-      groupedErrors[log.message].dates[date] = (groupedErrors[log.message].dates[date] || 0) + 1;
-      groupedErrors[log.message].lastTimestamp = log["@timestamp"];
+      groupedLogs[log.message].total++;
+      groupedLogs[log.message].dates[date] = (groupedLogs[log.message].dates[date] || 0) + 1;
+      groupedLogs[log.message].lastTimestamp = log["@timestamp"];
     });
 
-    const sortedErrors = Object.entries(groupedErrors)
-      .sort(([, a], [, b]) => b.total - a.total)
-      .slice(0, showMore ? 10 : 5);
+    const sortedLogs = Object.entries(groupedLogs).sort(([, a], [, b]) => b.total - a.total);
 
     const allDates = [
-      ...new Set(errorLogs.map((log) => new Date(log["@timestamp"]).toISOString().split("T")[0])),
+      ...new Set(
+        filteredLogs.map((log) => new Date(log["@timestamp"]).toISOString().split("T")[0])
+      ),
     ].sort();
 
-    const heatmapData = sortedErrors.map(([, data]) =>
+    const displayedLogs = sortedLogs.slice(0, showMore ? 10 : 5);
+    const heatmapData = displayedLogs.map(([, data]) =>
       allDates.map((date) => data.dates[date] || 0)
     );
 
     return {
       data: heatmapData,
       xLabels: allDates,
-      yLabels: sortedErrors.map(([error, data]) => ({
+      yLabels: displayedLogs.map(([error, data]) => ({
         message: error,
         total: data.total,
         log: data.log,
         firstTimestamp: data.firstTimestamp,
         lastTimestamp: data.lastTimestamp,
       })),
+      totalLogs: sortedLogs.length,
     };
-  }, [logs, showMore]);
+  }, [logs, showMore, selectedLogLevel]);
 
-  const getColor = useCallback((value) => {
-    if (value >= 10) return "rgb(174,54,43)";
-    if (value >= 5) return "rgb(215,153,148)";
-    if (value >= 1) return "rgb(237,205,203)";
-    return "rgb(255,255,255)";
+  const getColor = useCallback((value, logLevel) => {
+    const baseColor = logLevelColors[logLevel] || logLevelColors.INFO;
+    if (value === 0) return "rgb(255,255,255)";
+    const alpha = Math.min(value / 10, 1);
+    return `rgba(${parseInt(baseColor.slice(4, -1).split(",")[0])}, ${parseInt(
+      baseColor.slice(4, -1).split(",")[1]
+    )}, ${parseInt(baseColor.slice(4, -1).split(",")[2])}, ${alpha})`;
   }, []);
 
   const handleMoreClick = useCallback((message) => {
@@ -74,7 +95,7 @@ const EventsOverTime = ({ logs }) => {
       if (container) {
         const newContainerWidth = container.offsetWidth;
         setContainerWidth(newContainerWidth);
-        const newLabelWidth = Math.max(400, newContainerWidth * 0.3);
+        const newLabelWidth = Math.max(40, newContainerWidth * 0.4);
         setLabelWidth(newLabelWidth);
       }
     };
@@ -85,6 +106,21 @@ const EventsOverTime = ({ logs }) => {
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
+  useEffect(() => {
+    const measureText = (text, fontSize) => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      context.font = `${fontSize}px sans-serif`;
+      return context.measureText(text).width;
+    };
+
+    const newTextWidth = {};
+    processedData.yLabels.forEach((label, index) => {
+      newTextWidth[index] = measureText(label.message, 14); // 14px is the font size
+    });
+    setTextWidth(newTextWidth);
+  }, [processedData.yLabels]);
+
   const gridWidth = processedData.xLabels.length * cellWidth;
   const availableWidth = Math.max(containerWidth - labelWidth, gridWidth);
 
@@ -94,33 +130,35 @@ const EventsOverTime = ({ logs }) => {
   };
 
   if (processedData.data.length === 0) {
-    return <div className="text-center text-gray-500">No error data available</div>;
+    return <div className={styles.noData}>No log data available</div>;
   }
 
+  const formatDate = (timestamp) => {
+    return format(new Date(timestamp), "yyyy-MM-dd, HH:mm:ss");
+  };
+
+  const showMoreLessButton = processedData.totalLogs > 5;
+
+  console.log("Total logs:", processedData.totalLogs);
+  console.log("Displayed logs:", processedData.yLabels.length);
+  console.log("showMoreLessButton:", showMoreLessButton);
+
   return (
-    <div className="w-full" id="heatmapContainer">
-      <h2 className="text-2xl font-bold mb-4">Events Over Time</h2>
-      <div className="flex flex-col items-start overflow-x-auto border border-gray-300 rounded-lg p-5 bg-gray-50">
-        <div className="flex w-full justify-center">
+    <div className={styles.eventsOverTime} id="heatmapContainer">
+      <h2 className={styles.title}>Events Over Time</h2>
+      <div className={styles.heatmapContainer}>
+        <div className={styles.heatmapContent}>
           <div
-            className="flex flex-col justify-center mr-2"
+            className={styles.labels}
             style={{ width: `${labelWidth}px`, minWidth: `${labelWidth}px` }}
           >
             {processedData.yLabels.map((label, index) => {
-              const maxTextLength = Math.floor((labelWidth - 60) / 8); // Adjust for "More" button
-              const truncatedMessage = truncateText(label.message, maxTextLength);
-              const showMoreButton = truncatedMessage !== label.message;
+              const showMoreButton = textWidth[index] > labelWidth - 60;
               return (
-                <div
-                  key={index}
-                  className="text-sm whitespace-nowrap overflow-hidden h-[40px] flex items-center px-2 py-2 border-r border-gray-200"
-                >
-                  <span className="flex-1 overflow-hidden truncate pr-1">{truncatedMessage}</span>
+                <div key={index} className={styles.label}>
+                  <span className={styles.labelText}>{label.message}</span>
                   {showMoreButton && (
-                    <button
-                      onClick={() => handleMoreClick(label)}
-                      className="bg-transparent border-none text-blue-500 cursor-pointer text-xs p-0 ml-1 whitespace-nowrap hover:underline flex-shrink-0"
-                    >
+                    <button onClick={() => handleMoreClick(label)} className={styles.moreButton}>
                       More
                     </button>
                   )}
@@ -129,14 +167,13 @@ const EventsOverTime = ({ logs }) => {
             })}
           </div>
           <div
-            className="flex-grow relative"
+            className={styles.heatmap}
             style={{ width: `${availableWidth}px`, maxWidth: `${availableWidth}px` }}
           >
             <div
-              className="grid absolute top-0 left-0"
+              className={styles.heatmapGrid}
               style={{
                 gridTemplateColumns: `repeat(${processedData.xLabels.length}, ${cellWidth}px)`,
-                gridAutoRows: "40px",
                 width: `${gridWidth}px`,
               }}
             >
@@ -144,11 +181,13 @@ const EventsOverTime = ({ logs }) => {
                 row.map((value, colIndex) => (
                   <div
                     key={`${rowIndex}-${colIndex}`}
-                    className="flex items-center justify-center text-xs font-bold text-gray-800 border-r border-b border-white"
+                    className={styles.heatmapCell}
                     style={{
-                      backgroundColor: getColor(value),
+                      backgroundColor: getColor(
+                        value,
+                        processedData.yLabels[rowIndex].log["log.level"].toUpperCase()
+                      ),
                       opacity: value > 0 ? 1 : 0.1,
-                      cursor: "initial",
                       width: `${cellWidth}px`,
                       height: "40px",
                     }}
@@ -161,7 +200,7 @@ const EventsOverTime = ({ logs }) => {
           </div>
         </div>
         <div
-          className="flex justify-start w-full text-xs border-t border-gray-200 pt-2"
+          className={styles.xLabels}
           style={{
             marginLeft: `${labelWidth}px`,
             width: `${gridWidth}px`,
@@ -170,70 +209,54 @@ const EventsOverTime = ({ logs }) => {
           {processedData.xLabels.map((label, index) => (
             <div
               key={index}
-              className="flex flex-col items-center justify-start"
+              className={styles.xLabel}
               style={{
                 width: `${cellWidth}px`,
               }}
             >
-              <div className="h-4 w-px bg-gray-300" />
-              <div
-                className="mt-1 transform -rotate-90 origin-top-left translate-y-full whitespace-nowrap"
-                style={{ width: `${cellWidth}px` }}
-              >
-                {label}
-              </div>
+              <div className={styles.xLabelText}>{label}</div>
             </div>
           ))}
         </div>
-      </div>
-      <div className="mt-5 text-center">
-        <button
-          onClick={() => setShowMore(!showMore)}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
-        >
-          {showMore ? "Show Less" : "Show More"}
-        </button>
+        {showMoreLessButton && (
+          <div className={styles.showMoreContainer}>
+            <button onClick={() => setShowMore(!showMore)} className={styles.showMoreButton}>
+              {showMore ? "Show Less" : "Show More"}
+            </button>
+          </div>
+        )}
       </div>
       {selectedError && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl max-h-[80vh] overflow-y-auto relative">
-            <h3 className="text-xl font-bold mb-4 text-blue-600">{selectedError.message}</h3>
-            <p className="mb-2">
-              <strong className="font-semibold text-gray-700 inline-block w-[140px]">
-                Component:
-              </strong>
-              <span className="text-gray-800">{selectedError.log.component?.id || "N/A"}</span>
-            </p>
-            <p className="mb-2">
-              <strong className="font-semibold text-gray-700 inline-block w-[140px]">
-                Message:
-              </strong>
-              <span className="text-gray-800">{selectedError.message}</span>
-            </p>
-            <p className="mb-2">
-              <strong className="font-semibold text-gray-700 inline-block w-[140px]">Total:</strong>
-              <span className="text-gray-800">{selectedError.total}</span>
-            </p>
-            <p className="mb-2">
-              <strong className="font-semibold text-gray-700 inline-block w-[140px]">
-                First Occurred:
-              </strong>
-              <span className="text-gray-800">
-                {new Date(selectedError.firstTimestamp).toLocaleString()}
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <h3 className={styles.modalTitle}>Log Details</h3>
+            <p className={styles.modalField}>
+              <strong>Log Level:</strong>
+              <span
+                className={`${styles.logLevel} ${
+                  styles[selectedError.log["log.level"].toLowerCase() + "Level"]
+                }`}
+              >
+                {selectedError.log["log.level"].toUpperCase()}
               </span>
             </p>
-            <p className="mb-2">
-              <strong className="font-semibold text-gray-700 inline-block w-[140px]">
-                Last Occurred:
-              </strong>
-              <span className="text-gray-800">
-                {new Date(selectedError.lastTimestamp).toLocaleString()}
-              </span>
+            <p className={styles.modalField}>
+              <strong>Component:</strong> {selectedError.log.component?.id || "N/A"}
             </p>
-            <button
-              onClick={() => setSelectedError(null)}
-              className="absolute top-2 right-2 bg-gray-200 text-gray-600 border-none rounded-full w-8 h-8 text-base leading-8 text-center cursor-pointer hover:bg-gray-300"
-            >
+            <p className={styles.modalField}>
+              <strong>Message:</strong>
+              <span className={styles.messageValue}>{selectedError.message}</span>
+            </p>
+            <p className={styles.modalField}>
+              <strong>Total:</strong> {selectedError.total}
+            </p>
+            <p className={styles.modalField}>
+              <strong>First Occurred:</strong> {formatDate(selectedError.firstTimestamp)}
+            </p>
+            <p className={styles.modalField}>
+              <strong>Last Occurred:</strong> {formatDate(selectedError.lastTimestamp)}
+            </p>
+            <button onClick={() => setSelectedError(null)} className={styles.closeButton}>
               ×
             </button>
           </div>

@@ -1,113 +1,113 @@
 .tableContainer {
-  overflow-x: auto;
-  max-width: 100%;
-  background-color: #f0f4f8;
+  @apply bg-white rounded-lg shadow-md p-6;
 }
 
-.table {
-  display: inline-block;
-  border-spacing: 0;
-  border: 1px solid #cbd5e0;
-  width: 100%;
+.title {
+  @apply text-2xl font-bold mb-4 text-gray-800;
 }
 
-.tr {
-  display: flex;
+.filters {
+  @apply flex flex-wrap items-center gap-4 mb-6;
 }
 
-.th,
-.td {
-  box-sizing: border-box;
-  flex-shrink: 0;
-  overflow: hidden;
-  padding: 12px;
-  text-align: left;
-  background-color: #f0f4f8;
-  border-right: 1px solid #cbd5e0;
-  border-bottom: 1px solid #cbd5e0;
-}
-
-.th {
-  font-weight: 600;
-  color: #2d3748;
-  position: relative;
-  user-select: none;
-  background-color: #e2e8f0;
-}
-
-.messageCell {
-  white-space: nowrap;
-  overflow: hidden;
+.select {
+  @apply px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white;
+  max-width: 200px;
   text-overflow: ellipsis;
 }
 
+.datePickerContainer {
+  @apply flex items-center space-x-4 flex-wrap;
+}
+
+.datePicker {
+  @apply px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.button {
+  @apply px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition duration-150 ease-in-out;
+}
+
+.columnToggle {
+  @apply flex flex-wrap gap-4 mb-4;
+}
+
+.toggleLabel {
+  @apply flex items-center text-sm;
+}
+
+.toggleCheckbox {
+  @apply mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+}
+
+.tableWrapper {
+  @apply overflow-x-auto;
+}
+
+.table {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+.headerGroup {
+  @apply bg-gray-50;
+}
+
+.th {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+.tbody {
+  @apply bg-white divide-y divide-gray-200;
+}
+
+.tr {
+  @apply hover:bg-gray-50;
+}
+
+.td {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+}
+
+.logLevel {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.errorLevel {
+  @apply bg-red-100 text-red-800;
+}
+
+.warnLevel {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.infoLevel {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.debugLevel {
+  @apply bg-green-100 text-green-800;
+}
+
+.traceLevel {
+  @apply bg-purple-100 text-purple-800;
+}
+
+.fatalLevel {
+  @apply bg-red-200 text-red-900;
+}
+
+.defaultLevel {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.messageCell {
+  @apply truncate max-w-xs;
+}
+
 .resizer {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
-  width: 5px;
-  background: rgba(0, 0, 0, 0.1);
-  cursor: col-resize;
-  user-select: none;
-  touch-action: none;
+  @apply inline-block w-1 bg-gray-200 h-full absolute right-0 top-0 transform translate-x-1/2 z-10 cursor-col-resize touch-none;
 }
 
-.resizer.isResizing {
-  background: rgba(0, 0, 0, 0.2);
-  opacity: 1;
-}
-
-.td.log\.level {
-  font-weight: bold;
-}
-
-.td.log\.level[data-level="FATAL"] {
-  color: #8b0000;
-}
-
-.td.log\.level[data-level="ERROR"] {
-  color: #dc3545;
-}
-
-.td.log\.level[data-level="WARN"] {
-  color: #ffc107;
-}
-
-.td.log\.level[data-level="INFO"] {
-  color: #6c757d;
-}
-
-.td.log\.level[data-level="DEBUG"] {
-  color: #17a2b8;
-}
-
-.td.log\.level[data-level="TRACE"] {
-  color: #28a745;
-}
-
-@media (hover: hover) {
-  .resizer {
-    opacity: 0;
-  }
-
-  *:hover > .resizer {
-    opacity: 1;
-  }
-}
-
-@media (min-width: 1200px) {
-  .th,
-  .td {
-    padding: 14px;
-    font-size: 14px;
-  }
-}
-
-@media (min-width: 1600px) {
-  .th,
-  .td {
-    padding: 16px;
-    font-size: 16px;
-  }
+.resizer:hover {
+  @apply bg-gray-400;
 }

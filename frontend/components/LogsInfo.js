@@ -1,8 +1,8 @@
 import React from "react";
 
-const LogsInfo = ({ total, error, warn, info, debug, trace }) => {
+const LogsInfo = ({ total, error, warn, info, debug, trace, fatal }) => {
   return (
-    <div className="bg-gray-50 rounded-lg p-5 mb-5">
+    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <h2 className="text-xl font-bold mb-4 text-gray-800">Logs Info</h2>
       <div className="space-y-2">
         <p className="text-sm">
@@ -22,6 +22,9 @@ const LogsInfo = ({ total, error, warn, info, debug, trace }) => {
         </p>
         <p className="text-sm text-purple-600">
           Trace: <span className="font-medium">{trace}</span>
+        </p>
+        <p className="text-sm text-red-600">
+          Fatal: <span className="font-medium">{fatal}</span>
         </p>
       </div>
     </div>

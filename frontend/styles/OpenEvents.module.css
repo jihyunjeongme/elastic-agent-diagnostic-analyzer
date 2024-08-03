@@ -1,110 +1,76 @@
-.openEvents {
-  background-color: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  padding: 16px;
+.container {
+  @apply bg-white rounded-lg shadow-md p-6;
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 16px;
+  @apply text-xl font-semibold mb-4 text-black;
 }
 
 .eventSection {
-  margin-bottom: 16px;
+  @apply space-y-4;
 }
 
-.errorTitle {
-  color: #e53e3e;
-  font-weight: 600;
-  margin-bottom: 8px;
+.eventTitle {
+  @apply text-lg font-medium mb-2;
 }
 
-.warnTitle {
-  color: #dd6b20;
-  font-weight: 600;
-  margin-bottom: 8px;
+.eventList {
+  @apply space-y-2;
 }
 
-.event {
-  display: flex;
-  background-color: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  padding: 8px;
-  margin-bottom: 8px;
-}
-
-.errorIndicator,
-.warnIndicator {
-  width: 4px;
-  margin-right: 8px;
-  border-radius: 2px;
-}
-
-.errorIndicator {
-  background-color: #e53e3e;
-}
-
-.warnIndicator {
-  background-color: #dd6b20;
-}
-
-.eventContent {
-  flex: 1;
+.eventItem {
+  @apply text-sm border-l-4 pl-2 break-words;
 }
 
 .eventMessage {
-  display: block;
-  font-size: 14px;
-  color: #4a5568;
-  margin-bottom: 4px;
-  white-space: pre-wrap;
-  word-break: break-word;
+  @apply font-sans text-black;
 }
 
 .eventCount {
-  font-size: 12px;
-  color: #718096;
-  margin-left: 4px;
-}
-
-.eventTime {
-  font-size: 12px;
-  color: #718096;
-}
-
-.moreLink {
-  color: #4299e1;
-  cursor: pointer;
-  margin-left: 4px;
+  @apply ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full;
 }
 
 .pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 8px;
+  @apply mt-2 flex justify-center items-center text-sm;
 }
 
 .pageButton {
-  background-color: #edf2f7;
-  color: #4a5568;
-  border: none;
-  padding: 4px 8px;
-  margin: 0 2px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
+  @apply px-2 py-1 bg-blue-500 text-white rounded text-xs disabled:opacity-50;
 }
 
-.pageButton:hover {
-  background-color: #e2e8f0;
+.pageNumber {
+  @apply px-2 py-1 mx-1 rounded text-xs;
 }
 
-.activePage {
-  background-color: #4299e1;
-  color: #fff;
+.activePageNumber {
+  @apply bg-blue-500 text-white;
+}
+
+.inactivePageNumber {
+  @apply bg-gray-200 text-gray-700;
+}
+
+/* Log level specific border colors */
+.errorBorder {
+  @apply border-red-500;
+}
+
+.warnBorder {
+  @apply border-yellow-500;
+}
+
+.infoBorder {
+  @apply border-blue-500;
+}
+
+.debugBorder {
+  @apply border-green-500;
+}
+
+.traceBorder {
+  @apply border-purple-500;
+}
+
+.fatalBorder {
+  @apply border-red-700;
 }
