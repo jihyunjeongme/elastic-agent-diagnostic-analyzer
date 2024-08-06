@@ -127,10 +127,6 @@
   @apply border-r border-gray-300;
 }
 
-.cellContent {
-  @apply truncate w-full;
-}
-
 .messageContent {
   @apply w-full whitespace-normal break-words;
 }

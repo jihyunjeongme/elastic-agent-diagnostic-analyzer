@@ -164,7 +164,7 @@ const EventsOverTime = ({
   const truncateComponents = (components, maxLength = 50) => {
     const joined = components.join(", ");
     if (joined.length <= maxLength) return joined;
-    return joined.substring(0, maxLength - 3) + "...";
+    return joined.substring(0, maxLength - 1) + "...";
   };
 
   if (processedData.data.length === 0) {
@@ -274,7 +274,10 @@ const EventsOverTime = ({
               </span>
             </p>
             <p className={styles.modalField}>
-              <strong>Components:</strong> {truncateComponents(selectedError.components)}
+              <strong>Components:</strong>
+              <span className={styles.messageValue}>
+                {truncateComponents(selectedError.components)}
+              </span>
             </p>
             <p className={styles.modalField}>
               <strong>Message:</strong>

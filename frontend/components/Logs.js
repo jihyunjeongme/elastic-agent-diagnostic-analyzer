@@ -5,7 +5,7 @@ import LogsTable from "../components/LogsTable";
 import { useDiagnostic } from "../contexts/DiagnosticContext";
 import OpenEvents from "../components/OpenEvents";
 import EventsOverTime from "../components/EventsOverTime";
-import { readLogsFromZip, filterLogs } from "../utils/logHandler";
+import { readLogsFromZip, filterLogs, filterGroupedLogs } from "../utils/logHandler";
 import "react-datepicker/dist/react-datepicker.css";
 
 const LOGS_PER_PAGE = 12;
@@ -15,10 +15,12 @@ export default function Logs() {
     useDiagnostic();
 
   const [allLogs, setAllLogs] = useState([]);
+  const [groupedLogs, setGroupedLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState("ALL");
   const [selectedLogLevel, setSelectedLogLevel] = useState("ALL");
   const [selectedType, setSelectedType] = useState("ALL");
+  const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [timeRange, setTimeRange] = useState("30d");
   const [logsInfo, setLogsInfo] = useState({
     total: 0,
@@ -35,6 +37,7 @@ export default function Logs() {
   const [visibleColumns, setVisibleColumns] = useState({
     "@timestamp": true,
     "log.level": true,
+    status: true,
     message: true,
     "component.id": true,
     "component.type": true,
@@ -42,22 +45,25 @@ export default function Logs() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [isAbsoluteTime, setIsAbsoluteTime] = useState(false);
+  const [isInitialView, setIsInitialView] = useState(true);
 
   useEffect(() => {
     const fetchLogs = async () => {
       if (typeof window !== "undefined" && window.zipContents && !diagnosticInfo.logs) {
         setLoading(true);
         try {
-          const fetchedLogs = await readLogsFromZip(window.zipContents);
-          setAllLogs(fetchedLogs);
-          setDiagnosticInfo((prev) => ({ ...prev, logs: fetchedLogs }));
+          const { logs, groupedLogs } = await readLogsFromZip(window.zipContents);
+          setAllLogs(logs);
+          setGroupedLogs(groupedLogs);
+          setDiagnosticInfo((prev) => ({ ...prev, logs, groupedLogs }));
         } catch (error) {
           console.error("Error fetching logs:", error);
         } finally {
           setLoading(false);
         }
-      } else if (diagnosticInfo.logs) {
+      } else if (diagnosticInfo.logs && diagnosticInfo.groupedLogs) {
         setAllLogs(diagnosticInfo.logs);
+        setGroupedLogs(diagnosticInfo.groupedLogs);
         setLoading(false);
       } else {
         setLoading(false);
@@ -76,6 +82,7 @@ export default function Logs() {
       selectedId,
       selectedLogLevel,
       selectedType,
+      selectedStatus,
       isAbsoluteTime ? null : timeRange,
       startDate,
       endDate
@@ -85,6 +92,30 @@ export default function Logs() {
     selectedId,
     selectedLogLevel,
     selectedType,
+    selectedStatus,
+    timeRange,
+    isAbsoluteTime,
+    startDate,
+    endDate,
+  ]);
+
+  const filteredAndSortedGroupedLogs = useMemo(() => {
+    return filterGroupedLogs(
+      groupedLogs,
+      selectedId,
+      selectedLogLevel,
+      selectedType,
+      selectedStatus,
+      isAbsoluteTime ? null : timeRange,
+      startDate,
+      endDate
+    );
+  }, [
+    groupedLogs,
+    selectedId,
+    selectedLogLevel,
+    selectedType,
+    selectedStatus,
     timeRange,
     isAbsoluteTime,
     startDate,
@@ -145,6 +176,10 @@ export default function Logs() {
     return ["ALL", ...new Set(allLogs.map((log) => log.component?.type).filter(Boolean))];
   }, [allLogs]);
 
+  const uniqueStatuses = useMemo(() => {
+    return ["ALL", ...new Set(allLogs.map((log) => log.status).filter(Boolean))];
+  }, [allLogs]);
+
   const handleSort = useCallback((key) => {
     setSortConfig((prevConfig) => ({
       key,
@@ -172,40 +207,52 @@ export default function Logs() {
     }
   };
 
+  const handleLogLevelChange = (newLogLevel) => {
+    setSelectedLogLevel(newLogLevel);
+    if (newLogLevel !== "ALL") {
+      setIsInitialView(false);
+    }
+  };
+
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-      <div className="p-8 bg-gray-50">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Logs Details</h1>
+      <div className={styles.logsContainer}>
+        <h1 className={styles.title}>Logs Details</h1>
         {!isFileUploaded ? (
-          <p className="text-lg text-gray-600">Please upload a diagnostic bundle first.</p>
+          <p className={styles.message}>Please upload a diagnostic bundle first.</p>
         ) : loading ? (
-          <p className="text-lg text-gray-600">Loading logs...</p>
+          <p className={styles.message}>Loading logs...</p>
         ) : (
-          <div className="flex flex-col space-y-6">
-            <div className="w-full">
+          <div className={styles.content}>
+            <div className={styles.topSection}>
               <EventsOverTime
-                logs={filteredAndSortedLogs}
+                groupedLogs={filteredAndSortedGroupedLogs}
+                selectedLogLevel={selectedLogLevel}
+                isInitialView={isInitialView}
                 timeRange={timeRange}
                 startDate={startDate}
                 endDate={endDate}
               />
             </div>
-            <div className="flex flex-col lg:flex-row lg:space-x-10">
-              <div className="flex-grow lg:w-3/4">
+            <div className={styles.bottomSection}>
+              <div className={styles.logsTableSection}>
                 <LogsTable
                   logs={paginatedLogs}
                   sortConfig={sortConfig}
                   onSort={handleSort}
                   visibleColumns={visibleColumns}
                   selectedLogLevel={selectedLogLevel}
-                  setSelectedLogLevel={setSelectedLogLevel}
+                  setSelectedLogLevel={handleLogLevelChange}
                   selectedId={selectedId}
                   setSelectedId={setSelectedId}
                   selectedType={selectedType}
                   setSelectedType={setSelectedType}
+                  selectedStatus={selectedStatus}
+                  setSelectedStatus={setSelectedStatus}
                   uniqueIds={uniqueIds}
                   uniqueLogLevels={uniqueLogLevels}
                   uniqueTypes={uniqueTypes}
+                  uniqueStatuses={uniqueStatuses}
                   timeRange={timeRange}
                   handleTimeRangeChange={handleTimeRangeChange}
                   isAbsoluteTime={isAbsoluteTime}
@@ -220,9 +267,13 @@ export default function Logs() {
                   onPageChange={setCurrentPage}
                 />
               </div>
-              <div className="lg:w-1/4 space-y-6">
+              <div className={styles.openEventsSidebar}>
                 <LogsInfo {...logsInfo} />
-                <OpenEvents events={openEvents} selectedLogLevel={selectedLogLevel} />
+                <OpenEvents
+                  events={openEvents}
+                  selectedLogLevel={selectedLogLevel}
+                  isInitialView={isInitialView}
+                />
               </div>
             </div>
           </div>

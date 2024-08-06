@@ -95,38 +95,6 @@ export default function Home() {
     }
   }, [diagnosticInfo]);
 
-  // const onFileUpload = useCallback(
-  //   async (event) => {
-  //     const file = event.target.files[0];
-  //     if (!file) return;
-
-  //     console.log("File selected:", file);
-  //     setError(null);
-
-  //     try {
-  //       const zip = new JSZip();
-  //       const contents = await zip.loadAsync(file);
-  //       window.zipContents = contents;
-
-  //       const info = await handleFileUpload(file);
-  //       console.log("Parsed info:", info);
-  //       setDiagnosticInfo(info);
-
-  //       const configs = await readConfigFiles(contents);
-  //       setConfigData(configs);
-
-  //       setIsFileUploaded(true);
-  //     } catch (error) {
-  //       console.error("Error processing file:", error);
-  //       setError("파일 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
-  //       setDiagnosticInfo(null);
-  //       setConfigData(null);
-  //       setIsFileUploaded(false);
-  //     }
-  //   },
-  //   [setDiagnosticInfo, setIsFileUploaded]
-  // );
-
   const onFileUpload = useCallback(
     async (event) => {
       const file = event.target.files[0];
@@ -218,30 +186,16 @@ export default function Home() {
   );
 
   return (
-    <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-      <style jsx global>{`
-        .resizer {
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 5px;
-          cursor: col-resize;
-          user-select: none;
-        }
-        .resizer:hover,
-        .resizing {
-          border-right: 2px solid blue;
-        }
-        th {
-          position: relative;
-        }
-      `}</style>
+    <Layout>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       {!isFileUploaded && (
-        <div className={styles.uploadContainer}>
-          <h2 className={styles.uploadTitle}>Upload Elastic Agent Diagnostic Bundle</h2>
-          <div className={styles.fileInputWrapper}>
-            <label htmlFor="file-upload" className={styles.uploadButton}>
+        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Upload Elastic Agent Diagnostic Bundle</h2>
+          <div className="flex items-center space-x-4">
+            <label
+              htmlFor="file-upload"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-600 transition-colors"
+            >
               Choose File
             </label>
             <input
@@ -249,9 +203,9 @@ export default function Home() {
               type="file"
               onChange={onFileUpload}
               accept=".zip"
-              className={styles.fileInput}
+              className="hidden"
             />
-            <span className={styles.fileName}>
+            <span className="text-gray-600">
               {diagnosticInfo ? diagnosticInfo.fileName : "No file chosen"}
             </span>
           </div>
@@ -261,6 +215,8 @@ export default function Home() {
         <div className="max-w-full">
           {activeTab === "overview" && renderOverviewTab()}
           {activeTab === "configuration" && renderConfigurationTab()}
+          {activeTab === "logs" && <p className="text-xl">Logs tab content</p>}
+          {activeTab === "profiling" && <p className="text-xl">Profiling tab content</p>}
         </div>
       )}
     </Layout>

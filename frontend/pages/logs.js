@@ -14,7 +14,8 @@ export default function Logs() {
   const { activeTab, setActiveTab, isFileUploaded, diagnosticInfo, setDiagnosticInfo } =
     useDiagnostic();
 
-  const [allLogs, setAllLogs] = useState([]);
+  // allLogs 상태를 객체로 변경
+  const [allLogs, setAllLogs] = useState({ logs: [], groupedLogs: [] });
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState("ALL");
   const [selectedLogLevel, setSelectedLogLevel] = useState("ALL");
@@ -64,7 +65,11 @@ export default function Logs() {
           const fetchedLogs = await readLogsFromZip(window.zipContents);
           console.log("Fetched logs:", fetchedLogs);
           setAllLogs(fetchedLogs);
-          setDiagnosticInfo((prev) => ({ ...prev, logs: fetchedLogs }));
+          setDiagnosticInfo((prev) => ({
+            ...prev,
+            logs: fetchedLogs.logs,
+            groupedLogs: fetchedLogs.groupedLogs,
+          }));
         } catch (error) {
           console.error("Error fetching logs:", error);
         } finally {
@@ -72,7 +77,7 @@ export default function Logs() {
         }
       } else if (diagnosticInfo.logs) {
         console.log("Using cached logs:", diagnosticInfo.logs);
-        setAllLogs(diagnosticInfo.logs);
+        setAllLogs({ logs: diagnosticInfo.logs, groupedLogs: diagnosticInfo.groupedLogs || [] });
         setLoading(false);
       } else {
         setLoading(false);
@@ -87,23 +92,21 @@ export default function Logs() {
 
   const filteredAndSortedLogs = useMemo(() => {
     return filterLogs(
-      allLogs,
+      allLogs.logs,
       selectedId,
       selectedLogLevel,
       selectedType,
-      selectedStatus, // 추가: status 필터 추가
+      selectedStatus,
       isAbsoluteTime ? null : timeRange,
       startDate,
       endDate
     );
-    console.log("Filtered and sorted logs:", filtered);
-    return filtered;
   }, [
-    allLogs,
+    allLogs.logs,
     selectedId,
     selectedLogLevel,
     selectedType,
-    selectedStatus, // 추가: 의존성 배열에 status 추가
+    selectedStatus,
     timeRange,
     isAbsoluteTime,
     startDate,
@@ -156,23 +159,41 @@ export default function Logs() {
     setOpenEvents(events);
   }, []);
 
+  // allLogs.logs를 사용하도록 수정
   const uniqueIds = useMemo(() => {
-    return ["ALL", ...new Set(allLogs.map((log) => log.component?.id).filter(Boolean))];
-  }, [allLogs]);
+    console.log("Calculating uniqueIds, allLogs:", allLogs);
+    if (!Array.isArray(allLogs.logs)) {
+      console.error("allLogs.logs is not an array:", allLogs.logs);
+      return ["ALL"];
+    }
+    return ["ALL", ...new Set(allLogs.logs.map((log) => log.component?.id).filter(Boolean))];
+  }, [allLogs.logs]);
 
   const uniqueLogLevels = useMemo(() => {
-    return ["ALL", ...new Set(allLogs.map((log) => log["log.level"]))];
-  }, [allLogs]);
+    if (!Array.isArray(allLogs.logs)) {
+      console.error("allLogs.logs is not an array:", allLogs.logs);
+      return ["ALL"];
+    }
+    return ["ALL", ...new Set(allLogs.logs.map((log) => log["log.level"]))];
+  }, [allLogs.logs]);
 
   const uniqueTypes = useMemo(() => {
-    return ["ALL", ...new Set(allLogs.map((log) => log.component?.type).filter(Boolean))];
-  }, [allLogs]);
+    if (!Array.isArray(allLogs.logs)) {
+      console.error("allLogs.logs is not an array:", allLogs.logs);
+      return ["ALL"];
+    }
+    return ["ALL", ...new Set(allLogs.logs.map((log) => log.component?.type).filter(Boolean))];
+  }, [allLogs.logs]);
 
   const uniqueStatuses = useMemo(() => {
-    const statuses = ["ALL", ...new Set(allLogs.map((log) => log.status).filter(Boolean))];
-    console.log("Unique statuses:", statuses); // 디버깅용
+    if (!Array.isArray(allLogs.logs)) {
+      console.error("allLogs.logs is not an array:", allLogs.logs);
+      return ["ALL"];
+    }
+    const statuses = ["ALL", ...new Set(allLogs.logs.map((log) => log.status).filter(Boolean))];
+    console.log("Unique statuses:", statuses);
     return statuses;
-  }, [allLogs]);
+  }, [allLogs.logs]);
 
   const handleSort = useCallback((key) => {
     setSortConfig((prevConfig) => ({

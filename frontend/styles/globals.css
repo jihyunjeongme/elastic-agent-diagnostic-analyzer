@@ -5,14 +5,82 @@
 @tailwind utilities;
 
 body {
-  @apply bg-gray-100;
+  @apply bg-gray-100 text-gray-900;
   font-family: "Inter", sans-serif;
-  color: #1a1c21;
-  background-color: #f5f7fa;
 }
 
 .container {
   @apply w-full max-w-full px-4;
+}
+
+/* Layout styles */
+.layout-container {
+  @apply min-h-screen bg-gray-100;
+}
+
+.nav-container {
+  @apply bg-white shadow;
+}
+
+.tab-container {
+  @apply container mx-auto px-4 py-4;
+}
+
+.tab-list {
+  @apply flex justify-start space-x-2 relative;
+}
+
+.tab-button {
+  @apply px-6 py-3 text-sm font-medium rounded-lg transition-colors duration-200;
+}
+
+.tab-button.active {
+  @apply bg-blue-500 text-white;
+}
+
+.tab-button:not(.active) {
+  @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
+}
+
+.tab-button.disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.main-content {
+  @apply container mx-auto px-4 py-8 max-w-full;
+}
+
+.profiling-tab {
+  position: relative;
+  padding-right: 30px; /* 'i' 아이콘을 위한 공간 */
+}
+
+.popup-message {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  background-color: black;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.info-icon {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #ccc;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-style: normal;
+  cursor: help;
 }
 
 /* 기존 d3-flame-graph 스타일 유지 */
@@ -29,13 +97,15 @@ body {
   pointer-events: none;
 }
 
-/* .d3-flame-graph rect {
-  stroke: #eeeeee;
-  fill-opacity: 0.8;
+/* 추가된 유틸리티 클래스 */
+@layer utilities {
+  .bg-primary {
+    @apply bg-blue-500;
+  }
+  .text-primary {
+    @apply text-blue-500;
+  }
+  .hover-bg-primary:hover {
+    @apply bg-blue-600;
+  }
 }
-
-.d3-flame-graph text {
-  font-family: Verdana, Arial, sans-serif;
-  font-size: 12px;
-  pointer-events: none; */
-/* } */

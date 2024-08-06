@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { useDiagnostic } from "../contexts/DiagnosticContext";
 import Header from "./Header";
@@ -6,6 +6,7 @@ import Header from "./Header";
 export default function Layout({ children }) {
   const router = useRouter();
   const { activeTab, setActiveTab, isFileUploaded } = useDiagnostic();
+  const [showPopup, setShowPopup] = useState(false);
 
   const tabs = [
     { name: "Overview", id: "overview" },
@@ -20,40 +21,61 @@ export default function Layout({ children }) {
         alert("A file must be attached before accessing other tabs.");
         return;
       }
+      if (tabId === "profiling") {
+        return; // Profiling tab is always disabled
+      }
       setActiveTab(tabId);
       router.push(`/${tabId === "overview" ? "" : tabId}`);
     },
     [setActiveTab, router, isFileUploaded]
   );
 
+  const handleInfoHover = () => {
+    setShowPopup(true);
+  };
+
+  const handleInfoLeave = () => {
+    setShowPopup(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="layout-container">
       <Header version="0.1.0" />
-      <nav className="bg-white shadow">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-start space-x-2">
-            {" "}
-            {/* 여기를 수정 */}
+      <nav className="nav-container">
+        <div className="tab-container">
+          <div className="tab-list">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
-                className={`px-6 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                  activeTab === tab.id
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                } ${
-                  !isFileUploaded && tab.id !== "overview" ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={!isFileUploaded && tab.id !== "overview"}
+                className={`tab-button ${activeTab === tab.id ? "active" : ""} ${
+                  (!isFileUploaded && tab.id !== "overview") || tab.id === "profiling"
+                    ? "disabled"
+                    : ""
+                } ${tab.id === "profiling" ? "profiling-tab" : ""}`}
+                disabled={(!isFileUploaded && tab.id !== "overview") || tab.id === "profiling"}
               >
                 {tab.name}
+                {tab.id === "profiling" && (
+                  <span
+                    className="info-icon"
+                    onMouseEnter={handleInfoHover}
+                    onMouseLeave={handleInfoLeave}
+                  >
+                    i
+                  </span>
+                )}
               </button>
             ))}
           </div>
         </div>
       </nav>
-      <main className="container mx-auto px-4 py-8 max-w-full">{children}</main>
+      <main className="main-content">{children}</main>
+      {showPopup && (
+        <div className="popup-message">
+          The project is currently under development and actively being worked on.
+        </div>
+      )}
     </div>
   );
 }
