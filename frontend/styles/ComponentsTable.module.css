@@ -1,115 +1,83 @@
+.tableContainer {
+  @apply bg-white rounded-lg shadow-md p-6;
+}
+
+.tableHeader {
+  @apply mb-4;
+}
+
+.tableTitle {
+  @apply text-xl font-bold text-gray-800;
+}
+
+.tableWrapper {
+  @apply overflow-x-auto;
+}
+
 .table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  @apply min-w-full border-collapse;
 }
 
-.th,
-.td {
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-  border-right: 1px solid #e5e7eb;
-}
-
-.th:last-child,
-.td:last-child {
-  border-right: none;
+.tr {
+  @apply flex border-b border-gray-200;
 }
 
 .th {
-  background-color: #f3f4f6;
-  font-weight: 600;
-  font-size: 1.125rem;
-  color: #4b5563;
+  @apply px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 overflow-hidden relative;
 }
 
 .td {
-  font-size: 1rem;
-  color: #111827;
+  @apply px-4 py-2 text-sm text-gray-700 overflow-hidden relative;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
 .resizer {
-  display: inline-block;
-  width: 10px;
-  height: 100%;
-  position: absolute;
-  right: 0;
-  top: 0;
-  transform: translateX(50%);
-  z-index: 1;
+  @apply absolute right-0 top-0 h-full w-1 bg-gray-300 cursor-col-resize z-10;
   touch-action: none;
+  transform: translateX(50%);
 }
 
-.resizer:hover {
-  background: #cbd5e0;
+.resizer:hover,
+.resizerActive {
+  @apply bg-blue-500;
 }
 
-.badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.healthyBadge {
-  background-color: #d1fae5;
-  color: #065f46;
-}
-
-.unhealthyBadge {
-  background-color: #fee2e2;
-  color: #991b1b;
+.cellContent {
+  @apply truncate text-sm;
+  max-width: 100%;
+  display: block;
 }
 
 .versionInfo {
-  font-size: 1rem;
+  @apply flex flex-col text-sm;
 }
 
-.versionName,
-.versionNumber {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-  background-color: #e5e7eb;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  margin-right: 0.5rem;
+.statusBadge {
+  @apply inline-block px-2 py-1 text-sm font-medium rounded-full w-fit;
 }
 
-.metaInfo {
-  font-size: 1rem;
-  color: #6b7280;
+.healthyBadge {
+  @apply bg-green-100 text-green-800;
 }
 
-.unitLabel {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #4b5563;
+.unhealthyBadge {
+  @apply bg-red-100 text-red-800;
 }
 
-.unitValue {
-  font-size: 1rem;
-  color: #111827;
+.ioTypeInfo {
+  @apply flex flex-col text-sm;
 }
 
-.searchButton {
-  padding: 0.5rem 1rem;
-  background-color: #4a5568;
-  color: white;
-  border: none;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  font-size: 14px;
-  margin-right: 10px;
+.fontMedium {
+  @apply font-medium;
 }
 
-.searchButton:hover {
-  background-color: #2d3748;
+.unitsContainer {
+  max-height: 150px;
+  overflow-y: auto;
 }
 
-.highlightedVersion {
-  background-color: #f0f0f0;
-  padding: 2px 6px;
-  border-radius: 4px;
+.unitInfo {
+  @apply mb-2 last:mb-0 text-sm;
 }

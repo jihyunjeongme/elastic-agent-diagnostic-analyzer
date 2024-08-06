@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTable, useSortBy, useResizeColumns, useBlockLayout } from "react-table";
 import DatePicker from "react-datepicker";
 import Pagination from "./Pagination";
@@ -15,9 +15,12 @@ const LogsTable = ({
   setSelectedLogLevel,
   selectedType,
   setSelectedType,
+  selectedStatus,
+  setSelectedStatus,
   uniqueIds,
   uniqueLogLevels,
   uniqueTypes,
+  uniqueStatuses,
   timeRange,
   handleTimeRangeChange,
   isAbsoluteTime,
@@ -31,6 +34,9 @@ const LogsTable = ({
   totalPages,
   onPageChange,
 }) => {
+  console.log("Logs received in LogsTable:", logs);
+  const [localSortConfig, setLocalSortConfig] = useState(sortConfig);
+
   const logLevelColors = useMemo(
     () => ({
       ERROR: styles.errorLevel,
@@ -43,44 +49,28 @@ const LogsTable = ({
     []
   );
 
+  const allColumns = useMemo(
+    () => [
+      { Header: "@timestamp", accessor: "@timestamp" },
+      { Header: "Log Level", accessor: "log.level" },
+      { Header: "Status", accessor: "status" },
+      { Header: "Message", accessor: "message" },
+      { Header: "Component ID", accessor: "component.id" },
+      { Header: "Component Type", accessor: "component.type" },
+    ],
+    []
+  );
+
   const columns = useMemo(
-    () =>
-      Object.keys(visibleColumns)
-        .filter((key) => visibleColumns[key])
-        .map((key) => ({
-          Header: key,
-          accessor: key,
-          Cell: ({ value, row }) => {
-            if (key === "log.level") {
-              return (
-                <span
-                  className={`${styles.badge} ${
-                    logLevelColors[value?.toUpperCase()] || styles.defaultLevel
-                  }`}
-                >
-                  {value}
-                </span>
-              );
-            } else if (key === "component.id" || key === "component.type") {
-              return row.original.component?.[key.split(".")[1]] || "N/A";
-            } else if (key === "message") {
-              return (
-                <div className={styles.messageCell} title={value}>
-                  {value}
-                </div>
-              );
-            }
-            return value || "N/A";
-          },
-        })),
-    [visibleColumns, logLevelColors]
+    () => allColumns.filter((column) => visibleColumns[column.accessor]),
+    [visibleColumns]
   );
 
   const defaultColumn = useMemo(
     () => ({
-      minWidth: 30,
+      minWidth: 50,
       width: 150,
-      maxWidth: 400,
+      maxWidth: 1000,
     }),
     []
   );
@@ -90,7 +80,9 @@ const LogsTable = ({
       columns,
       data: logs,
       defaultColumn,
-      initialState: { sortBy: [{ id: sortConfig.key, desc: sortConfig.direction === "desc" }] },
+      initialState: {
+        sortBy: [{ id: localSortConfig.key, desc: localSortConfig.direction === "desc" }],
+      },
       manualSortBy: true,
       disableMultiSort: true,
     },
@@ -100,15 +92,23 @@ const LogsTable = ({
   );
 
   const handleSort = useCallback(
-    (column) => {
-      onSort(column.id);
+    (columnId) => {
+      const isDesc = localSortConfig.key === columnId && localSortConfig.direction === "asc";
+      const newSortConfig = {
+        key: columnId,
+        direction: isDesc ? "desc" : "asc",
+      };
+      setLocalSortConfig(newSortConfig);
+      onSort(newSortConfig);
     },
-    [onSort]
+    [localSortConfig, onSort]
   );
 
   return (
     <div className={styles.tableContainer}>
       <h2 className={styles.title}>Log Table</h2>
+
+      {/* Filters section */}
       <div className={styles.filters}>
         <select
           value={selectedId}
@@ -141,6 +141,21 @@ const LogsTable = ({
         </select>
 
         <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className={styles.select}
+        >
+          <option value="ALL">ALL Statuses</option>
+          {uniqueStatuses
+            .filter((status) => status !== "ALL")
+            .map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+        </select>
+
+        <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
           className={styles.select}
@@ -157,25 +172,67 @@ const LogsTable = ({
 
         {isAbsoluteTime ? (
           <div className={styles.datePickerContainer}>
-            <DatePicker
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-              selectsStart
-              startDate={startDate}
-              endDate={endDate}
-              placeholderText="Start Date"
-              className={styles.datePicker}
-            />
-            <DatePicker
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-              selectsEnd
-              startDate={startDate}
-              endDate={endDate}
-              minDate={startDate}
-              placeholderText="End Date"
-              className={styles.datePicker}
-            />
+            <div className={styles.datePickerWrapper}>
+              <DatePicker
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+                placeholderText="Start Date"
+                className={styles.datePicker}
+                dateFormat="yyyy-MM-dd"
+                popperClassName={styles.datePickerPopper}
+                popperPlacement="bottom-start"
+                popperModifiers={[
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [0, 10],
+                    },
+                  },
+                  {
+                    name: "preventOverflow",
+                    options: {
+                      rootBoundary: "viewport",
+                      tether: false,
+                      altAxis: true,
+                    },
+                  },
+                ]}
+              />
+            </div>
+            <div className={styles.datePickerWrapper}>
+              <DatePicker
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                minDate={startDate}
+                placeholderText="End Date"
+                className={styles.datePicker}
+                dateFormat="yyyy-MM-dd"
+                popperClassName={styles.datePickerPopper}
+                popperPlacement="bottom-start"
+                popperModifiers={[
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [0, 10],
+                    },
+                  },
+                  {
+                    name: "preventOverflow",
+                    options: {
+                      rootBoundary: "viewport",
+                      tether: false,
+                      altAxis: true,
+                    },
+                  },
+                ]}
+              />
+            </div>
             <button onClick={() => setIsAbsoluteTime(false)} className={styles.button}>
               Use Relative Time
             </button>
@@ -199,60 +256,98 @@ const LogsTable = ({
         )}
       </div>
 
+      {/* Column toggle section */}
       <div className={styles.columnToggle}>
-        {Object.keys(visibleColumns).map((columnKey) => (
-          <label key={columnKey} className={styles.toggleLabel}>
+        {allColumns.map((column) => (
+          <label key={column.accessor} className={styles.toggleLabel}>
             <input
               type="checkbox"
-              checked={visibleColumns[columnKey]}
-              onChange={() => handleColumnToggle(columnKey)}
+              checked={visibleColumns[column.accessor]}
+              onChange={() => handleColumnToggle(column.accessor)}
               className={styles.toggleCheckbox}
             />
-            {columnKey}
+            <span className={styles.toggleText}>{column.Header}</span>
           </label>
         ))}
       </div>
 
+      {/* Table section */}
       <div className={styles.tableWrapper}>
-        <table {...getTableProps()} className={styles.table}>
-          <thead>
+        <div {...getTableProps()} className={styles.table}>
+          <div className={styles.thead}>
             {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()} className={styles.headerGroup}>
-                {headerGroup.headers.map((column) => (
-                  <th
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    className={styles.th}
-                    onClick={() => handleSort(column)}
+              <div {...headerGroup.getHeaderGroupProps()} className={styles.tr}>
+                {headerGroup.headers.map((column, index) => (
+                  <div
+                    {...column.getHeaderProps()}
+                    className={`${styles.th} ${
+                      index < headerGroup.headers.length - 1 ? styles.cellBorder : ""
+                    }`}
+                    style={{
+                      ...column.getHeaderProps().style,
+                      position: "relative",
+                    }}
+                    onClick={() => handleSort(column.id)}
                   >
-                    {column.render("Header")}
+                    <div className={styles.headerContent}>{column.render("Header")}</div>
                     <div
                       {...column.getResizerProps()}
-                      className={`${styles.resizer} ${column.isResizing ? "isResizing" : ""}`}
+                      className={`${styles.resizer} ${
+                        column.isResizing ? styles.resizerActive : ""
+                      }`}
+                      onClick={(e) => e.stopPropagation()}
                     />
-                  </th>
+                  </div>
                 ))}
-              </tr>
+              </div>
             ))}
-          </thead>
-          <tbody {...getTableBodyProps()} className={styles.tbody}>
+          </div>
+          <div {...getTableBodyProps()} className={styles.tbody}>
             {rows.map((row) => {
               prepareRow(row);
               return (
-                <tr {...row.getRowProps()} className={styles.tr}>
-                  {row.cells.map((cell) => {
+                <div {...row.getRowProps()} className={styles.tr}>
+                  {row.cells.map((cell, index) => {
+                    console.log(
+                      `Rendering cell for row ${row.id}, column ${cell.column.id}:`,
+                      cell.value
+                    );
+
+                    const cellValue = cell.value ?? row.original[cell.column.id];
                     return (
-                      <td {...cell.getCellProps()} className={styles.td}>
-                        {cell.render("Cell")}
-                      </td>
+                      <div
+                        {...cell.getCellProps()}
+                        className={`${styles.td} ${
+                          index < row.cells.length - 1 ? styles.cellBorder : ""
+                        }`}
+                        style={{
+                          ...cell.getCellProps().style,
+                        }}
+                      >
+                        {cell.column.id === "log.level" ? (
+                          <span
+                            className={`${styles.logLevel} ${
+                              styles[`${cellValue.toLowerCase()}Level`]
+                            }`}
+                          >
+                            {cellValue.toUpperCase()}
+                          </span>
+                        ) : cell.column.id === "status" ? (
+                          <span className={styles.status}>{cellValue || "N/A"}</span>
+                        ) : (
+                          <div className={styles.cellContent} data-column={cell.column.id}>
+                            {cellValue || "N/A"}
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
-                </tr>
+                </div>
               );
             })}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
-
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
     </div>
   );

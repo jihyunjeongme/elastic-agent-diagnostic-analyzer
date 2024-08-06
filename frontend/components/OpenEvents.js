@@ -12,7 +12,23 @@ const logLevelColors = {
   FATAL: styles.fatalBorder,
 };
 
-const OpenEvents = ({ events, selectedLogLevel }) => {
+// 이벤트를 처리하는 함수
+const processLevelEvents = (levelEvents) => {
+  const eventCounts = levelEvents.reduce((counts, event) => {
+    counts[event.message] = (counts[event.message] || 0) + 1;
+    return counts;
+  }, {});
+
+  return Object.entries(eventCounts)
+    .map(([message, count]) => ({
+      message,
+      count,
+    }))
+    .sort((a, b) => b.count - a.count);
+};
+
+const OpenEvents = ({ events, selectedLogLevel, isInitialView }) => {
+  // 각 로그 레벨의 현재 페이지 상태
   const [currentPages, setCurrentPages] = useState({
     ERROR: 1,
     WARN: 1,
@@ -22,31 +38,28 @@ const OpenEvents = ({ events, selectedLogLevel }) => {
     FATAL: 1,
   });
 
+  // 처리된 이벤트 데이터
   const processedEvents = useMemo(() => {
-    console.log("Events received:", events);
-    console.log("Selected log level:", selectedLogLevel);
+    const upperCaseSelectedLogLevel = selectedLogLevel.toUpperCase();
 
     return Object.entries(events).reduce((acc, [level, levelEvents]) => {
       const upperCaseLevel = level.toUpperCase();
-      const upperCaseSelectedLogLevel = selectedLogLevel.toUpperCase();
 
-      if (upperCaseSelectedLogLevel === "ALL" || upperCaseLevel === upperCaseSelectedLogLevel) {
-        const eventCounts = levelEvents.reduce((counts, event) => {
-          counts[event.message] = (counts[event.message] || 0) + 1;
-          return counts;
-        }, {});
-
-        acc[upperCaseLevel] = Object.entries(eventCounts)
-          .map(([message, count]) => ({
-            message,
-            count,
-          }))
-          .sort((a, b) => b.count - a.count); // 카운트 기준 내림차순 정렬
+      // 초기 뷰이고 ALL이 선택된 경우 ERROR와 WARN만 표시
+      if (isInitialView && upperCaseSelectedLogLevel === "ALL") {
+        if (upperCaseLevel === "ERROR" || upperCaseLevel === "WARN") {
+          acc[upperCaseLevel] = processLevelEvents(levelEvents);
+        }
+      }
+      // 초기 뷰가 아니거나 특정 레벨이 선택된 경우
+      else if (!isInitialView || upperCaseLevel === upperCaseSelectedLogLevel) {
+        acc[upperCaseLevel] = processLevelEvents(levelEvents);
       }
       return acc;
     }, {});
-  }, [events, selectedLogLevel]);
+  }, [events, selectedLogLevel, isInitialView]);
 
+  // 페이지네이션된 이벤트 데이터
   const paginatedEvents = useMemo(() => {
     return Object.entries(processedEvents).reduce((acc, [level, levelEvents]) => {
       const startIndex = (currentPages[level] - 1) * EVENTS_PER_PAGE;
@@ -55,6 +68,7 @@ const OpenEvents = ({ events, selectedLogLevel }) => {
     }, {});
   }, [processedEvents, currentPages]);
 
+  // 각 로그 레벨의 총 페이지 수 계산
   const totalPages = useMemo(() => {
     return Object.entries(processedEvents).reduce((acc, [level, levelEvents]) => {
       acc[level] = Math.ceil(levelEvents.length / EVENTS_PER_PAGE);
@@ -62,6 +76,7 @@ const OpenEvents = ({ events, selectedLogLevel }) => {
     }, {});
   }, [processedEvents]);
 
+  // 페이지 변경 핸들러
   const handlePageChange = (level, newPage) => {
     setCurrentPages((prev) => ({
       ...prev,
@@ -69,6 +84,7 @@ const OpenEvents = ({ events, selectedLogLevel }) => {
     }));
   };
 
+  // 컴포넌트 렌더링
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Open Events</h2>

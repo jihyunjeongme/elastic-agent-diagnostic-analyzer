@@ -20,6 +20,14 @@ export const readLogsFromZip = async (zipContents) => {
           if (line.trim()) {
             try {
               const log = JSON.parse(line);
+              let status = null;
+
+              // message에서 status 추출
+              const statusMatch = log.message.match(/"status":(\d+)/);
+              if (statusMatch) {
+                status = parseInt(statusMatch[1], 10);
+              }
+
               logs.push({
                 "@timestamp": log["@timestamp"],
                 "log.level": log["log.level"],
@@ -29,6 +37,7 @@ export const readLogsFromZip = async (zipContents) => {
                   type: log.component?.type || "N/A",
                 },
                 error: log.error,
+                status: status,
               });
             } catch (error) {
               console.error("Error parsing log line:", error);
@@ -37,6 +46,7 @@ export const readLogsFromZip = async (zipContents) => {
         });
       })
   );
+  console.log("Processed logs:", logs);
   return logs;
 };
 
@@ -69,6 +79,7 @@ export const filterLogs = (
   selectedId,
   selectedLogLevel,
   selectedType,
+  selectedStatus,
   timeRange,
   startDate,
   endDate
@@ -79,6 +90,7 @@ export const filterLogs = (
     const matchesId = selectedId === "ALL" || log.component?.id === selectedId;
     const matchesLogLevel = selectedLogLevel === "ALL" || log["log.level"] === selectedLogLevel;
     const matchesType = selectedType === "ALL" || log.component?.type === selectedType;
+    const matchesStatus = selectedStatus === "ALL" || log.status === parseInt(selectedStatus, 10);
 
     let isWithinTimeRange = true;
     if (timeRange) {
@@ -88,6 +100,6 @@ export const filterLogs = (
       isWithinTimeRange = isWithinInterval(logDate, { start: startDate, end: endDate });
     }
 
-    return matchesId && matchesLogLevel && matchesType && isWithinTimeRange;
+    return matchesId && matchesLogLevel && matchesType && matchesStatus && isWithinTimeRange;
   });
 };

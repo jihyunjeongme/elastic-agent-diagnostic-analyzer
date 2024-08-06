@@ -3,7 +3,7 @@
 }
 
 .title {
-  @apply text-2xl font-bold mb-4 text-gray-800;
+  @apply text-2xl font-bold mb-6 text-gray-800; /* 여백 증가 */
 }
 
 .filters {
@@ -11,65 +11,140 @@
 }
 
 .select {
-  @apply px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white;
-  max-width: 200px;
+  @apply px-4 py-2 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white;
+  max-width: 400px;
   text-overflow: ellipsis;
 }
 
 .datePickerContainer {
-  @apply flex items-center space-x-4 flex-wrap;
+  @apply flex items-center space-x-4 relative;
+}
+
+.datePickerWrapper {
+  @apply relative;
 }
 
 .datePicker {
   @apply px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500;
+  width: 150px;
+}
+
+.datePickerPopper {
+  @apply z-50;
 }
 
 .button {
-  @apply px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition duration-150 ease-in-out;
+  @apply px-4 py-2 bg-blue-500 text-white rounded-md text-xs hover:bg-blue-600 transition duration-150 ease-in-out;
 }
 
 .columnToggle {
-  @apply flex flex-wrap gap-4 mb-4;
+  @apply flex flex-wrap gap-4 mb-4 p-4 bg-gray-100 rounded-md;
 }
 
 .toggleLabel {
-  @apply flex items-center text-sm;
+  @apply flex items-center text-xs cursor-pointer;
 }
 
 .toggleCheckbox {
-  @apply mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+  @apply mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded;
+  appearance: none;
+  background-color: #fff;
+  display: inline-block;
+  position: relative;
+}
+
+.toggleCheckbox:checked {
+  @apply bg-blue-600 border-transparent;
+}
+
+.toggleCheckbox:checked::after {
+  content: "\2714";
+  font-size: 12px;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.toggleText {
+  @apply ml-2;
 }
 
 .tableWrapper {
-  @apply overflow-x-auto;
+  @apply overflow-x-auto w-full;
+  /* @apply relative; 이 줄을 추가하세요 */
+  z-index: 1; /* 이 줄을 추가하세요 */
 }
 
 .table {
-  @apply min-w-full divide-y divide-gray-200;
+  @apply min-w-full border-collapse table-fixed;
 }
 
-.headerGroup {
-  @apply bg-gray-50;
-}
-
-.th {
-  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
-}
-
-.tbody {
-  @apply bg-white divide-y divide-gray-200;
+.thead {
+  @apply sticky top-0 z-10 bg-gray-50;
 }
 
 .tr {
-  @apply hover:bg-gray-50;
+  @apply flex w-full;
+}
+
+.th,
+.td {
+  @apply px-4 py-2 text-xs flex items-center overflow-hidden;
+  min-width: 0;
+}
+
+.th {
+  @apply text-left font-medium text-gray-500 uppercase tracking-wider bg-gray-50 relative;
 }
 
 .td {
-  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+  @apply px-4 py-2 text-xs flex items-center overflow-hidden;
+  min-width: 0;
+}
+
+.tbody {
+  @apply bg-white;
+}
+
+.tr:hover {
+  @apply bg-gray-50;
+}
+
+.resizer {
+  @apply absolute right-0 top-0 h-full w-1 bg-gray-300 cursor-col-resize z-10;
+  touch-action: none;
+  transform: translateX(50%);
+}
+
+.resizer:hover,
+.resizerActive {
+  @apply bg-blue-500;
+}
+
+.cellBorder {
+  @apply border-r border-gray-300;
+}
+
+.cellContent {
+  @apply truncate w-full;
+}
+
+.messageContent {
+  @apply w-full whitespace-normal break-words;
+}
+
+.cellContent[data-column="message"] {
+  @apply whitespace-normal break-words overflow-visible;
+}
+
+.headerContent {
+  @apply truncate w-full;
 }
 
 .logLevel {
-  @apply px-2 py-1 rounded-full text-xs font-medium;
+  @apply inline-block px-2 py-1 rounded-full text-xs font-medium uppercase whitespace-nowrap;
 }
 
 .errorLevel {
@@ -100,14 +175,6 @@
   @apply bg-gray-100 text-gray-800;
 }
 
-.messageCell {
-  @apply truncate max-w-xs;
-}
-
-.resizer {
-  @apply inline-block w-1 bg-gray-200 h-full absolute right-0 top-0 transform translate-x-1/2 z-10 cursor-col-resize touch-none;
-}
-
-.resizer:hover {
-  @apply bg-gray-400;
+.status {
+  @apply inline-block px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
 }

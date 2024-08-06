@@ -8,7 +8,7 @@ import EventsOverTime from "../components/EventsOverTime";
 import { readLogsFromZip, filterLogs } from "../utils/logHandler";
 import styles from "../styles/Logs.module.css";
 
-const LOGS_PER_PAGE = 12;
+const LOGS_PER_PAGE = 15;
 
 export default function Logs() {
   const { activeTab, setActiveTab, isFileUploaded, diagnosticInfo, setDiagnosticInfo } =
@@ -19,6 +19,7 @@ export default function Logs() {
   const [selectedId, setSelectedId] = useState("ALL");
   const [selectedLogLevel, setSelectedLogLevel] = useState("ALL");
   const [selectedType, setSelectedType] = useState("ALL");
+  const [selectedStatus, setSelectedStatus] = useState("ALL"); // 추가: status 상태
   const [timeRange, setTimeRange] = useState("30d");
   const [logsInfo, setLogsInfo] = useState({
     total: 0,
@@ -39,16 +40,21 @@ export default function Logs() {
   });
   const [sortConfig, setSortConfig] = useState({ key: "@timestamp", direction: "desc" });
   const [currentPage, setCurrentPage] = useState(1);
+
+  // 여기에 visibleColumns 상태를 추가합니다
   const [visibleColumns, setVisibleColumns] = useState({
     "@timestamp": true,
     "log.level": true,
     message: true,
     "component.id": true,
     "component.type": true,
+    status: true, // status 컬럼 추가
   });
+
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [isAbsoluteTime, setIsAbsoluteTime] = useState(false);
+  const [isInitialView, setIsInitialView] = useState(true);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -56,6 +62,7 @@ export default function Logs() {
         setLoading(true);
         try {
           const fetchedLogs = await readLogsFromZip(window.zipContents);
+          console.log("Fetched logs:", fetchedLogs);
           setAllLogs(fetchedLogs);
           setDiagnosticInfo((prev) => ({ ...prev, logs: fetchedLogs }));
         } catch (error) {
@@ -64,6 +71,7 @@ export default function Logs() {
           setLoading(false);
         }
       } else if (diagnosticInfo.logs) {
+        console.log("Using cached logs:", diagnosticInfo.logs);
         setAllLogs(diagnosticInfo.logs);
         setLoading(false);
       } else {
@@ -83,15 +91,19 @@ export default function Logs() {
       selectedId,
       selectedLogLevel,
       selectedType,
+      selectedStatus, // 추가: status 필터 추가
       isAbsoluteTime ? null : timeRange,
       startDate,
       endDate
     );
+    console.log("Filtered and sorted logs:", filtered);
+    return filtered;
   }, [
     allLogs,
     selectedId,
     selectedLogLevel,
     selectedType,
+    selectedStatus, // 추가: 의존성 배열에 status 추가
     timeRange,
     isAbsoluteTime,
     startDate,
@@ -156,6 +168,12 @@ export default function Logs() {
     return ["ALL", ...new Set(allLogs.map((log) => log.component?.type).filter(Boolean))];
   }, [allLogs]);
 
+  const uniqueStatuses = useMemo(() => {
+    const statuses = ["ALL", ...new Set(allLogs.map((log) => log.status).filter(Boolean))];
+    console.log("Unique statuses:", statuses); // 디버깅용
+    return statuses;
+  }, [allLogs]);
+
   const handleSort = useCallback((key) => {
     setSortConfig((prevConfig) => ({
       key,
@@ -183,6 +201,13 @@ export default function Logs() {
     }
   };
 
+  const handleLogLevelChange = (newLogLevel) => {
+    setSelectedLogLevel(newLogLevel);
+    if (newLogLevel !== "ALL") {
+      setIsInitialView(false);
+    }
+  };
+
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
       <div className={styles.logsContainer}>
@@ -194,14 +219,14 @@ export default function Logs() {
         ) : (
           <div className={styles.content}>
             <div className={styles.topSection}>
-              <div className={styles.eventsOverTime}>
-                <EventsOverTime
-                  logs={filteredAndSortedLogs}
-                  timeRange={timeRange}
-                  startDate={startDate}
-                  endDate={endDate}
-                />
-              </div>
+              <EventsOverTime
+                logs={filteredAndSortedLogs}
+                selectedLogLevel={selectedLogLevel}
+                isInitialView={isInitialView}
+                timeRange={timeRange}
+                startDate={startDate}
+                endDate={endDate}
+              />
             </div>
             <div className={styles.bottomSection}>
               <div className={styles.logsTableSection}>
@@ -210,15 +235,18 @@ export default function Logs() {
                   sortConfig={sortConfig}
                   onSort={handleSort}
                   visibleColumns={visibleColumns}
-                  selectedId={selectedId}
-                  setSelectedId={setSelectedId}
                   selectedLogLevel={selectedLogLevel}
                   setSelectedLogLevel={setSelectedLogLevel}
+                  selectedId={selectedId}
+                  setSelectedId={setSelectedId}
                   selectedType={selectedType}
                   setSelectedType={setSelectedType}
+                  selectedStatus={selectedStatus} // 추가: status 상태 전달
+                  setSelectedStatus={setSelectedStatus} // 추가: status 상태 설정 함수 전달
                   uniqueIds={uniqueIds}
                   uniqueLogLevels={uniqueLogLevels}
                   uniqueTypes={uniqueTypes}
+                  uniqueStatuses={uniqueStatuses} // 추가: 유니크한 status 목록 전달
                   timeRange={timeRange}
                   handleTimeRangeChange={handleTimeRangeChange}
                   isAbsoluteTime={isAbsoluteTime}
@@ -235,7 +263,11 @@ export default function Logs() {
               </div>
               <div className={styles.openEventsSidebar}>
                 <LogsInfo {...logsInfo} />
-                <OpenEvents events={openEvents} selectedLogLevel={selectedLogLevel} />
+                <OpenEvents
+                  events={openEvents}
+                  selectedLogLevel={selectedLogLevel}
+                  isInitialView={isInitialView}
+                />
               </div>
             </div>
           </div>

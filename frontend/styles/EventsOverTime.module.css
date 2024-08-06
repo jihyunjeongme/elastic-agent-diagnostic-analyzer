@@ -140,3 +140,55 @@
 .fatalLevel {
   @apply bg-red-200 text-red-900;
 }
+
+.showMoreLessContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.5rem; /* 상단 여백 줄임 */
+  margin-bottom: 0.5rem; /* 하단 여백 추가 */
+  gap: 1rem;
+  width: 100%; /* 컨테이너의 너비를 100%로 설정 */
+  position: absolute; /* 절대 위치 설정 */
+  bottom: 10px; /* 하단에서 10px 위에 위치 */
+  left: 0; /* 왼쪽 정렬 */
+}
+
+.showMoreButton,
+.showLessButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.showMoreButton {
+  color: white;
+  background-color: #2563eb;
+  order: -1; /* 항상 왼쪽에 위치 */
+}
+
+.showLessButton {
+  color: #2563eb;
+  background-color: #dbeafe;
+}
+
+.showMoreButton:hover {
+  background-color: #1d4ed8;
+}
+
+.showLessButton:hover {
+  background-color: #bfdbfe;
+}
+
+.showMoreButton:focus,
+.showLessButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
+
+.hidden {
+  display: none;
+}

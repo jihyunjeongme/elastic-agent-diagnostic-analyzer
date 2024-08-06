@@ -1,5 +1,6 @@
 import "../styles/globals.css";
 import { DiagnosticProvider } from "../contexts/DiagnosticContext";
+import "react-datepicker/dist/react-datepicker.css";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 

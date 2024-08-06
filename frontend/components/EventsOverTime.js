@@ -1,50 +1,73 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import styles from "../styles/EventsOverTime.module.css";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { utcToZonedTime } from "date-fns-tz";
 
-const EventsOverTime = ({ logs }) => {
+const INITIAL_DISPLAYED_LOGS = 5;
+
+const logLevelColors = {
+  ERROR: "rgb(248,113,113)",
+  WARN: "rgb(251,191,36)",
+  INFO: "rgb(96,165,250)",
+  DEBUG: "rgb(52,211,153)",
+  TRACE: "rgb(209,213,219)",
+  FATAL: "rgb(220,38,38)",
+};
+
+const EventsOverTime = ({
+  logs,
+  selectedLogLevel,
+  isInitialView,
+  timeRange,
+  startDate,
+  endDate,
+}) => {
   const [containerWidth, setContainerWidth] = useState(0);
-  const [showMore, setShowMore] = useState(false);
+  const [displayedLogsCount, setDisplayedLogsCount] = useState(INITIAL_DISPLAYED_LOGS);
   const [selectedError, setSelectedError] = useState(null);
   const [labelWidth, setLabelWidth] = useState(400);
   const [textWidth, setTextWidth] = useState({});
-  const [selectedLogLevel, setSelectedLogLevel] = useState("ALL");
-
-  const logLevelColors = {
-    ERROR: "rgb(248,113,113)",
-    WARN: "rgb(251,191,36)",
-    INFO: "rgb(96,165,250)",
-    DEBUG: "rgb(52,211,153)",
-    TRACE: "rgb(209,213,219)",
-    FATAL: "rgb(220,38,38)",
-  };
 
   const processedData = useMemo(() => {
     if (!logs || logs.length === 0) {
       return { data: [], xLabels: [], yLabels: [], totalLogs: 0 };
     }
 
-    const filteredLogs =
-      selectedLogLevel === "ALL"
-        ? logs
-        : logs.filter((log) => log["log.level"]?.toUpperCase() === selectedLogLevel);
+    const upperCaseSelectedLogLevel = selectedLogLevel.toUpperCase();
+
+    const filteredLogs = logs.filter((log) => {
+      const logLevel = log["log.level"]?.toUpperCase();
+      if (isInitialView && upperCaseSelectedLogLevel === "ALL") {
+        return logLevel === "ERROR" || logLevel === "WARN";
+      }
+      return upperCaseSelectedLogLevel === "ALL" || logLevel === upperCaseSelectedLogLevel;
+    });
 
     const groupedLogs = {};
 
     filteredLogs.forEach((log) => {
-      const date = new Date(log["@timestamp"]).toISOString().split("T")[0];
+      const utcDate = new Date(log["@timestamp"]);
+      const date = utcDate.toISOString().split("T")[0];
       if (!groupedLogs[log.message]) {
         groupedLogs[log.message] = {
           total: 0,
           dates: {},
-          log,
-          firstTimestamp: log["@timestamp"],
-          lastTimestamp: log["@timestamp"],
+          components: new Set(),
+          firstTimestamp: utcDate,
+          lastTimestamp: utcDate,
+          logLevel: log["log.level"]?.toUpperCase() || "UNKNOWN",
         };
       }
       groupedLogs[log.message].total++;
       groupedLogs[log.message].dates[date] = (groupedLogs[log.message].dates[date] || 0) + 1;
-      groupedLogs[log.message].lastTimestamp = log["@timestamp"];
+      groupedLogs[log.message].components.add(log.component?.id || "N/A");
+
+      if (utcDate < groupedLogs[log.message].firstTimestamp) {
+        groupedLogs[log.message].firstTimestamp = utcDate;
+      }
+      if (utcDate > groupedLogs[log.message].lastTimestamp) {
+        groupedLogs[log.message].lastTimestamp = utcDate;
+      }
     });
 
     const sortedLogs = Object.entries(groupedLogs).sort(([, a], [, b]) => b.total - a.total);
@@ -55,7 +78,7 @@ const EventsOverTime = ({ logs }) => {
       ),
     ].sort();
 
-    const displayedLogs = sortedLogs.slice(0, showMore ? 10 : 5);
+    const displayedLogs = sortedLogs.slice(0, displayedLogsCount);
     const heatmapData = displayedLogs.map(([, data]) =>
       allDates.map((date) => data.dates[date] || 0)
     );
@@ -66,13 +89,14 @@ const EventsOverTime = ({ logs }) => {
       yLabels: displayedLogs.map(([error, data]) => ({
         message: error,
         total: data.total,
-        log: data.log,
+        components: Array.from(data.components),
         firstTimestamp: data.firstTimestamp,
         lastTimestamp: data.lastTimestamp,
+        logLevel: data.logLevel,
       })),
       totalLogs: sortedLogs.length,
     };
-  }, [logs, showMore, selectedLogLevel]);
+  }, [logs, selectedLogLevel, isInitialView, displayedLogsCount]);
 
   const getColor = useCallback((value, logLevel) => {
     const baseColor = logLevelColors[logLevel] || logLevelColors.INFO;
@@ -85,6 +109,14 @@ const EventsOverTime = ({ logs }) => {
 
   const handleMoreClick = useCallback((message) => {
     setSelectedError(message);
+  }, []);
+
+  const handleShowMore = useCallback(() => {
+    setDisplayedLogsCount((prevCount) => prevCount + 5);
+  }, []);
+
+  const handleShowLess = useCallback(() => {
+    setDisplayedLogsCount((prevCount) => Math.max(INITIAL_DISPLAYED_LOGS, prevCount - 5));
   }, []);
 
   const cellWidth = 40;
@@ -116,7 +148,7 @@ const EventsOverTime = ({ logs }) => {
 
     const newTextWidth = {};
     processedData.yLabels.forEach((label, index) => {
-      newTextWidth[index] = measureText(label.message, 14); // 14px is the font size
+      newTextWidth[index] = measureText(label.message, 14);
     });
     setTextWidth(newTextWidth);
   }, [processedData.yLabels]);
@@ -124,24 +156,20 @@ const EventsOverTime = ({ logs }) => {
   const gridWidth = processedData.xLabels.length * cellWidth;
   const availableWidth = Math.max(containerWidth - labelWidth, gridWidth);
 
-  const truncateText = (text, maxLength) => {
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength - 1) + "…";
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return format(date, "yyyy-MM-dd, HH:mm:ss");
+  };
+
+  const truncateComponents = (components, maxLength = 50) => {
+    const joined = components.join(", ");
+    if (joined.length <= maxLength) return joined;
+    return joined.substring(0, maxLength - 3) + "...";
   };
 
   if (processedData.data.length === 0) {
     return <div className={styles.noData}>No log data available</div>;
   }
-
-  const formatDate = (timestamp) => {
-    return format(new Date(timestamp), "yyyy-MM-dd, HH:mm:ss");
-  };
-
-  const showMoreLessButton = processedData.totalLogs > 5;
-
-  console.log("Total logs:", processedData.totalLogs);
-  console.log("Displayed logs:", processedData.yLabels.length);
-  console.log("showMoreLessButton:", showMoreLessButton);
 
   return (
     <div className={styles.eventsOverTime} id="heatmapContainer">
@@ -185,7 +213,7 @@ const EventsOverTime = ({ logs }) => {
                     style={{
                       backgroundColor: getColor(
                         value,
-                        processedData.yLabels[rowIndex].log["log.level"].toUpperCase()
+                        processedData.yLabels[rowIndex].logLevel.toUpperCase()
                       ),
                       opacity: value > 0 ? 1 : 0.1,
                       width: `${cellWidth}px`,
@@ -218,13 +246,18 @@ const EventsOverTime = ({ logs }) => {
             </div>
           ))}
         </div>
-        {showMoreLessButton && (
-          <div className={styles.showMoreContainer}>
-            <button onClick={() => setShowMore(!showMore)} className={styles.showMoreButton}>
-              {showMore ? "Show Less" : "Show More"}
+        <div className={styles.showMoreLessContainer}>
+          {displayedLogsCount > INITIAL_DISPLAYED_LOGS && (
+            <button onClick={handleShowLess} className={styles.showLessButton}>
+              Show Less
             </button>
-          </div>
-        )}
+          )}
+          {processedData.totalLogs > displayedLogsCount && (
+            <button onClick={handleShowMore} className={styles.showMoreButton}>
+              Show More
+            </button>
+          )}
+        </div>
       </div>
       {selectedError && (
         <div className={styles.modal}>
@@ -234,14 +267,14 @@ const EventsOverTime = ({ logs }) => {
               <strong>Log Level:</strong>
               <span
                 className={`${styles.logLevel} ${
-                  styles[selectedError.log["log.level"].toLowerCase() + "Level"]
+                  styles[selectedError.logLevel.toLowerCase() + "Level"]
                 }`}
               >
-                {selectedError.log["log.level"].toUpperCase()}
+                {selectedError.logLevel}
               </span>
             </p>
             <p className={styles.modalField}>
-              <strong>Component:</strong> {selectedError.log.component?.id || "N/A"}
+              <strong>Components:</strong> {truncateComponents(selectedError.components)}
             </p>
             <p className={styles.modalField}>
               <strong>Message:</strong>
