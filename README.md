@@ -52,13 +52,49 @@ Allows users to analyze log entries from the Elastic Agent.
 
 Offers tools to visualize and analyze profiling data from the Elastic Agent.
 
-## Prerequisites
+- NOTE: The project is currently under development and actively being worked on.
+
+## Installation and Running
+
+### Recommended: Docker
+
+For the most stable experience, we recommend using the Docker image available on Docker Hub. This method ensures that you are running a tested and consistent version of the analyzer.
+
+#### Prerequisites
+
+**Docker**: Make sure you have Docker Desktop or Docker Engine installed on your system.
+
+#### Steps
+
+1. **Pull the Docker image:**
+
+   ```bash
+   docker pull jihyunjh/elastic-agent-diagnostic-analyzer:0.1.0
+   ```
+
+2. **Run the Docker container:**
+
+   ```bash
+   docker run -p 3000:3000 jihyunjh/elastic-agent-diagnostic-analyzer:0.1.0
+   ```
+
+3. **Access the applicationr:**
+
+- Open your browser and visit http://localhost:3000 to start using the analyzer.
+
+#### Dockerhub: https://hub.docker.com/r/jihyunjh/elastic-agent-diagnostic-analyzer
+
+### Alternative: Running from Source
+
+If you prefer to run the application directly from the source code, please be aware that active development may lead to instability.
+
+#### Prerequisites
 
 - Node.js (version 14.0.0 or later recommended)
 - npm (version 6.0.0 or later) or yarn (version 1.22.0 or later)
 - Git (for cloning the repository)
 
-## Installation
+##### Installation
 
 1. Clone the repository: `git clone https://github.com/your-username/elastic-agent-diagnostic-analyzer.git`
 2. Navigate to the project directory: `cd elastic-agent-diagnostic-analyzer/frontend`
@@ -67,7 +103,7 @@ Offers tools to visualize and analyze profiling data from the Elastic Agent.
 - If using npm: `npm install`
 - If using yarn: `yarn install`
 
-## Running the Development Server
+##### Running the Development Server
 
 1. Start the development server:
 
@@ -82,7 +118,6 @@ If you encounter any issues during installation or running the project:
 
 1. Make sure you're using the correct versions of Node.js and npm/yarn.
 2. Try deleting the `node_modules` folder and `package-lock.json` (or `yarn.lock`) file, then run the install command again.
-3. If you're still having issues, please check the project's GitHub Issues page or create a new issue with details about the problem you're facing.
 
 ## Licenses
 
